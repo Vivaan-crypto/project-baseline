@@ -22,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "mock_events.db"
-OUT_PATH = Path(__file__).parent.parent / "src" / "app" / "_data" / "rhythm-map.json"
+OUT_PATH = Path(__file__).parent.parent / "app" / "_data" / "rhythm-map.json"
 
 DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 

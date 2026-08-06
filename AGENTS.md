@@ -69,7 +69,7 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 
 ```
 baseline/                Next.js on Vercel — marketing + beta signup. Lives at
-│                         repo root: package.json, src/, next.config.ts, etc.
+│                         repo root: package.json, app/, next.config.ts, etc.
 ├── collector/           Python. Passive capture → local SQLite. AGPL, public.
 ├── engine/              Python. Rollup, baseline computation, drift detection.
 └── desktop/             Tauri shell + Next.js static export. NO SERVER.
@@ -336,6 +336,7 @@ Do not reopen without a written reason.
 | No web app version | A browser tab cannot see OS-level focus or app switching |
 | 7-day free trial for Fragments/Trace/Activity/Switch Rate; Rhythm Map moved to a paid one-time purchase instead of trial-gated | These four are single-day descriptive stats, not baseline comparisons — useful from day one, unlike Drift or Rhythm Map, which need real history to say anything |
 | Marketing site moved from `site/` to the repo root (2026-08-05) | `main` was stale and had no `site/` folder at all, so Vercel's Root Directory setting couldn't be pointed at it reliably; root-level deploy needs no special config |
+| Dropped the `src/` wrapper — `app/` and `lib/` sit directly at repo root (2026-08-05) | Same goal as the `site/` move: fewer nested directories between the repo root and the actual Next.js app |
 | Brand kit v1.0 (Ink/Paper/Lime/Cobalt/Red, Space Grotesk + JetBrains Mono, hard borders/offset shadows) adopted, superseding the earlier teal/Geist palette | See §14 — full spec in `docs/BRAND_KIT.html` |
 
 ---
@@ -371,4 +372,4 @@ Full spec: [`docs/BRAND_KIT.html`](docs/BRAND_KIT.html) — a self-extracting bu
 - **Red is destructive-only.** Places that mark an *intentional* absence — "never captured," "no server," privacy guarantees — stay muted/neutral, not red. An absence there is a feature, not an error; coloring it red would misrepresent it as a warning.
 - Wordmark: the word sits on a lime bar (the "baseline"). Never remove the bar, never round it, never italicize the word.
 
-Implemented in `src/app/globals.css` (`--ink`, `--paper`, `--lime`, `--cobalt`, `--red`, `--negative`, `--shadow-sm`, `--shadow-lg`, the `.press` and `.pulse` utilities) — treat that file as the source of truth for exact token values, this section as the rationale for how to use them.
+Implemented in `app/globals.css` (`--ink`, `--paper`, `--lime`, `--cobalt`, `--red`, `--negative`, `--shadow-sm`, `--shadow-lg`, the `.press` and `.pulse` utilities) — treat that file as the source of truth for exact token values, this section as the rationale for how to use them.

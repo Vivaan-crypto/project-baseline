@@ -6,7 +6,7 @@ import { submitSignup } from "@/app/actions";
 import { initialSignupState } from "@/lib/signup-state";
 
 /**
- * The download CTA. There is no Windows binary yet (AGENTS.md §9 sequences the
+ * The beta-list CTA. There is no Windows binary yet (AGENTS.md §9 sequences the
  * landing page ahead of the packaged .exe), so the button collects an address
  * instead of serving a file — but the click is still recorded as install intent,
  * which is what assumption #3 in §10 is measured on.
@@ -75,10 +75,10 @@ export function SignupForm({ location }: { location: string }) {
           disabled={pending}
           // Records intent before validation runs, so a click still counts when
           // the address is malformed or the field is empty.
-          onClick={() => track("download_click", { location })}
+          onClick={() => track("beta_signup_click", { location })}
           className="press shrink-0 border-[3px] border-ink bg-lime px-6 py-3.5 font-sans text-base font-bold text-ink shadow-[5px_5px_0_0_var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:opacity-60 disabled:shadow-none"
         >
-          {pending ? "Adding…" : "Get the Windows build"}
+          {pending ? "Adding…" : "Join the beta list"}
         </button>
       </form>
 

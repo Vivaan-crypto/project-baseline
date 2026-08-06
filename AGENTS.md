@@ -206,7 +206,7 @@ Rule 10 forbids training a general model on user data. Three sanctioned approach
 
 ## 8. Features and lexicon
 
-Names are measurement vocabulary. Nothing clever, everything obvious on sight.
+Names are measurement vocabulary — and geological, deliberately: Baseline is a survey term, Drift is continental. **Fragments** (broken rock), **Bedrock** (the solid layer under it), **Residue** (what an interruption leaves behind), **Core** (a core sample — what's really down there), **Rhythm Map** (plain, does the work), **Drift** (later). Keep new names in that register.
 
 ### Table stakes — free, ship or it feels stripped
 | Feature | Name |
@@ -219,37 +219,68 @@ Names are measurement vocabulary. Nothing clever, everything obvious on sight.
 | Timeline of the day | Trace |
 | Export + full history | never gated |
 
-### Unique
+### Tiers (revised 2026-08-06 — this replaces every earlier free/Pro split in this section)
+
+| Tier | Features |
+|---|---|
+| **Free, permanent** | Activity, Trace |
+| **Paid** | Fragments, Bedrock, Residue, Core, Rhythm Map |
+| **Later** | Drift, Switch Cost |
+
+Activity and Trace stay free forever — table stakes, the app feels broken without them, and they're commoditized anyway (ActivityWatch, RescueTime, Toggl, and Clockify all give them away). Charging for them invites a comparison Baseline loses. The paid set is five features with no free consumer equivalent, which is the actual pitch.
+
+**Switch Rate — the v0-era "switches per hour" count — is dropped.** Residue supersedes it with an actual definition (settle time after an interruption) instead of a raw count nobody could act on.
+
+### The five paid features
+
+All derive from data the collector already captures (`keys`, `mouse`, `windows`) — no new capture required for any of them.
+
+**Fragments** — how many separate blocks focus came in, and how long each lasted. Histogram of block lengths, bucketed `<5m / 5–15m / 15–30m / 30–60m / 1–2h / 2h+`; blocks under 15m rendered in the deviation colour. Headline number: block count + longest, e.g. "11 pieces. Longest 9 minutes." **The only paid feature with no free equivalent anywhere — gets headline treatment on the landing page, not one card among four.** Status: `svg_blocks()` in dashboard.py, working.
+
+**Bedrock** — the single longest unbroken block that day, the solid layer under everything. One large number, plus the app and time window it happened in, with a 14-day sparkline beneath. Headline: "Bedrock: 12 minutes, 10:15–10:27, Code.exe." Definition: longest single block from the same `focus_blocks()` output Fragments uses — must be a `focus`-category block; a two-hour Discord session is not bedrock. Status: trivial from existing code, not surfaced yet. Needs one sentence of explanation on first sight — a subtitle under the number, not a tooltip.
+
+**Residue** — after an interruption, how long before you're back in a sustained block. Per-interruption list with duration, plus a daily median; grouped by source app so "Slack cost you 14 minutes of residue today" is derivable. Headline: "That standup left 14 minutes of residue."
+
+Definitions — visible in the UI, not just the code:
+- *Interruption* = a switch out of a `focus` block into `comms` or `mixed`, lasting more than `SWITCH_TOLERANCE` (20s).
+- *Settled* = back in a `focus`-category app for ≥ 3 continuous minutes.
+- *Residue* = time from returning to the focus app until settled. If they never settle before the next interruption, mark it unsettled and exclude from the median — do not treat it as zero.
+- Cap any single residue measurement at 30 minutes; beyond that they moved on to something else.
+
+Status: not built — needs a new function over `focus_blocks()`. This is Sophie Leroy's attention residue; the term is accurate, not just evocative borrowing. Do not cite research in the UI and do not make claims about cognition — describe the measurement only. This is a direct application of hard rule 4 (no clinical language): Residue is the feature most tempted to drift into "this is bad for your brain" framing, and it must not.
+
+**Core** — the share of the active day that held together. One percentage, plus a 30-day trend line. Headline: "38% core." Definition: active seconds inside `focus` blocks ≥ 25 minutes, over total active seconds. The 25-minute threshold is tunable and must be visible in the UI. Status: trivial from existing code, not surfaced yet. Needs one sentence of explanation on first sight, same as Bedrock.
+
+**Rhythm Map** — weekday × hour intensity of sustained input, over whatever history exists. Heatmap, **single-hue ramp, light to dark** — the earlier multi-hue (yellow/green/blue) version had no natural intensity ordering and didn't read; reverted 2026-08-06. **Ship it from day one.** It looks thin before ~2 weeks, which is a data problem, not a shipping problem — label it "fills in as you go" and show whatever history exists. Do not gate it behind a waiting period or exclude it from any trial. Status: `svg_rhythm()` in dashboard.py, working; needed the colour fix (done 2026-08-06).
+
+### Build order
+1. **Bedrock and Core.** Both a few lines over `focus_blocks()` — fastest path to two new paid features.
+2. **Rhythm Map colour fix.** Single-hue ramp. Ten minutes.
+3. **Fragments as headline.** The only feature with no free equivalent anywhere; don't bury it in a grid of four.
+4. **Residue.** The only real build. Lock the definitional decisions above before writing code.
+
+### Constraints
+- No new capture. Everything derives from `keys`, `mouse`, `windows`.
+- No clinical language — Residue especially. Describe the measurement, never what it means about the person.
+- Every threshold (`25m` for Core, `3m` settle, `20s` tolerance, `30m` residue cap) is visible in the UI and tunable in config. Users must be able to see what was measured.
+- Free tier features never expire.
+
+### Still open (not superseded by the above)
 | Feature | Name | Shows |
 |---|---|---|
-| Weekday × hour intensity heatmap | **Rhythm Map** | When you actually sustain work |
-| Block-length distribution | **Fragments** | Whether focus came in chunks or shards |
-| Deviation from personal normal | **Drift** | Today is unusual vs. your last 30 days |
+| Deviation from personal normal | **Drift** | Today is unusual vs. your last 30 days — Later tier |
 | ±1 SD normal range | **Band** | The reference everything is measured against |
 | First 14 days | **Calibration** | Why it's quiet at first |
 | Peak window vs. when hard work is scheduled | **Mismatch** | The uncomfortable one |
 | Break cadence vs. baseline | **Recovery** | Are you pausing like you normally do |
-| Switch rate + post-switch settle time | **Switch Cost** | What fragmentation costs in minutes |
+| Switch rate + post-switch settle time | **Switch Cost** | Later tier — Residue ships first and covers similar ground for v1 |
 
-**Highest-impact free feature: Mismatch.** Produces an uncomfortable chart on first open and needs no keystroke data.
-**Strongest Pro feature: Switch Cost.** Converts fragmentation into minutes lost — an actionable number beats a chart people nod at.
+These weren't addressed by the 2026-08-06 spec and aren't dropped — just not yet placed in a tier. Don't assume Mismatch is still "the free hook"; that framing predates this section and hasn't been reconfirmed.
 
-### Tiers
-- **Free:** table stakes + Mismatch
-- **Trial (7 days, no card):** Fragments, Trace, Activity, Switch Rate
-- **Paid, one-time purchase:** Rhythm Map — moved out of the free tier 2026-08-04; it benefits from more history than a trial window gives, so it's sold rather than trial-gated
-- **Pro:** Drift, Switch Cost, Fragments analytics, long-range trends, multi-device sync
+### Landing page state (2026-08-06)
+Main pitch: Fragments headlined, Bedrock/Residue/Core/Rhythm Map as the rest of the paid set, Activity and Trace stated explicitly as free forever (not just "free for now"). Rhythm Map ships ungated with "fills in as you go" labeling — no more "needs more history than a trial gives you" exclusion. No Architecture/data-flow diagram on the page; the Capture section already covers "data never leaves the device" without needing one.
 
-### v0 ship set
-
-The tiers above are the long-term plan; they are not what ships first. The actual first build is four features, decided 2026-08-04:
-
-- **Fragments** — block-length distribution
-- **Trace** — timeline of the day
-- **Activity** — where the time went
-- **Switch Rate** — switches per hour (the simple count, not yet the settle-time-to-minutes conversion described as Switch Cost above)
-
-The landing page reflects this: the main pitch is these four, with 7-day-trial messaging attached. Rhythm Map still appears lower on the page (mock data pipeline included) but is now framed as Premium — a separate one-time purchase, not part of the trial. No Architecture/data-flow diagram on the page anymore; the Capture section already covers "data never leaves the device" without needing a separate diagram.
+**Open, unresolved as of this section:** whether Bedrock/Residue/Core — all marked not-built or not-surfaced above — get advertised on the public landing page before they exist, or whether the page only reflects what's actually shippable today (Fragments, Activity, Trace, Rhythm Map). Don't assume either answer; it changes what the page says.
 
 ---
 
@@ -264,7 +295,7 @@ Build in this order. Do not skip ahead.
 
 **A web app is not on this list.** A browser tab cannot observe OS window focus, application switching, or input outside itself, which means the Rhythm Map and Fragments — the two differentiators — are not buildable on the web. If asked for a web version of the product, explain this rather than building a degraded one.
 
-**Beta terms (revised 2026-08-04):** Fragments, Trace, Activity, and Switch Rate — the v0 ship set (§8) — get a free 7-day trial, no card. A 10-day trial is still incoherent for anything that needs the 14-day baseline (Drift, and Rhythm Map's 30-day-deep view) to say something real; these four don't have that problem; they're single-day descriptive stats, not baseline comparisons, so they're useful from day one and a short trial actually shows the product working. Rhythm Map is a separate one-time purchase instead of trial-gated — it benefits from more history than a week gives you. Pricing is still assumption #5 and largely untested; this is the first real data point, not a validated model.
+**Beta terms (revised 2026-08-06, supersedes the 2026-08-04 version):** Activity and Trace are free, permanently — not a trial, not time-limited. Fragments, Bedrock, Residue, Core, and Rhythm Map are the paid set (§8). Rhythm Map ships ungated from day one regardless of trial status — it fills in as history accumulates rather than waiting behind a calibration period, so there's no more "needs more history than a week gives you" exclusion. Pricing mechanics for the paid five (trial length, one-time vs. subscription) are not yet decided here; don't assume the old 7-day/no-card trial terms still apply to the new set without checking the landing page and this section are actually in sync. Pricing is still assumption #5 and largely untested.
 
 ---
 
@@ -338,6 +369,10 @@ Do not reopen without a written reason.
 | Marketing site moved from `site/` to the repo root (2026-08-05) | `main` was stale and had no `site/` folder at all, so Vercel's Root Directory setting couldn't be pointed at it reliably; root-level deploy needs no special config |
 | Dropped the `src/` wrapper — `app/` and `lib/` sit directly at repo root (2026-08-05) | Same goal as the `site/` move: fewer nested directories between the repo root and the actual Next.js app |
 | Brand kit v1.0 (Ink/Paper/Lime/Cobalt/Red, Space Grotesk + JetBrains Mono, hard borders/offset shadows) adopted, superseding the earlier teal/Geist palette | See §14 — full spec in `docs/BRAND_KIT.html` |
+| Activity and Trace made free forever, not trial-gated; Switch Rate dropped in favor of Residue (2026-08-06) | Activity/Trace are commoditized by free competitors (ActivityWatch, RescueTime, Toggl, Clockify) — charging invites a losing comparison. Switch Rate was a raw count nobody could act on; Residue replaces it with an actual settle-time definition |
+| Fragments, Bedrock, Residue, Core, Rhythm Map are the paid set; this **supersedes** the earlier "Rhythm Map as free hook" decision (2026-08-06) | Fragments is the only one of the five with no free consumer equivalent anywhere, which is now the actual pitch; Rhythm Map moved to paid on 2026-08-04 and stays there |
+| Rhythm Map heat scale reverted to single-hue light-to-dark, replacing the multi-hue Cobalt→Lime ramp (2026-08-06) | The multi-hue version had no natural intensity ordering and didn't read as a heatmap, despite being an attempt to fix an earlier low-contrast single-hue version |
+| Rhythm Map ships ungated from day one, "fills in as you go" instead of waiting behind a history requirement (2026-08-06) | Reverses the 2026-08-04 "not part of the trial, needs more history than a week" exclusion — thin-early-data is a data problem, not a shipping problem, and nobody buys a feature they've never seen run |
 
 ---
 

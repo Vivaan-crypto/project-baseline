@@ -2,24 +2,37 @@ import type { ReactNode } from "react";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
 
-const FEATURES = [
+const FREE_FEATURES = [
   {
-    name: "Fragments",
+    name: "Activity",
     description:
-      "Your focus came in eleven pieces today. Longest block: nine minutes.",
+      "Where your time actually went, broken down by app and by site.",
   },
   {
     name: "Trace",
     description:
-      "A timeline of your day, broken into blocks. What you were in, and for how long.",
+      "A timeline of your day in blocks. What you were in, for how long, and where it broke.",
+  },
+] as const;
+
+const PAID_FEATURES = [
+  {
+    name: "Bedrock",
+    headline: "Bedrock: 12 minutes, 10:15–10:27, Code.exe.",
+    subtitle:
+      "Your single longest unbroken block of real focus that day — the solid layer under everything else.",
   },
   {
-    name: "Activity",
-    description: "Where your time actually went, broken down by app and by site.",
+    name: "Residue",
+    headline: "That standup left 14 minutes of residue.",
+    subtitle:
+      "After an interruption, how long it takes you to get back into a sustained block.",
   },
   {
-    name: "Switch Rate",
-    description: "How many times you switch context, hour by hour.",
+    name: "Core",
+    headline: "38% core.",
+    subtitle:
+      "The share of your active day that held together in blocks of 25 minutes or more.",
   },
 ] as const;
 
@@ -42,12 +55,7 @@ const COMPARISON = [
   {
     question: "Where did the time go?",
     tracker: "Answers it",
-    baseline: "Activity",
-  },
-  {
-    question: "What did the day actually look like?",
-    tracker: "Just a log",
-    baseline: "Trace",
+    baseline: "Activity — free here too",
   },
   {
     question: "Did focus come in one piece or ten?",
@@ -55,9 +63,14 @@ const COMPARISON = [
     baseline: "Fragments",
   },
   {
-    question: "How often did you get pulled away?",
+    question: "What was your best stretch today?",
+    tracker: "Not measured",
+    baseline: "Bedrock",
+  },
+  {
+    question: "What did that meeting actually cost you?",
     tracker: "Doesn't track it",
-    baseline: "Switch Rate",
+    baseline: "Residue",
   },
 ] as const;
 
@@ -80,13 +93,29 @@ function SectionHeading({
   );
 }
 
+function FreeBadge() {
+  return (
+    <span className="shrink-0 border-[3px] border-ink bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
+      Free forever
+    </span>
+  );
+}
+
+function IncludedBadge() {
+  return (
+    <span className="shrink-0 border-[3px] border-ink bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
+      Included
+    </span>
+  );
+}
+
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 sm:px-8">
       {/* 1 — Hero */}
       <section className="py-20 sm:py-28">
         <p className="mb-5 font-mono text-xs uppercase tracking-widest text-muted">
-          v1 · Windows
+          Version 1
         </p>
         <h1 className="max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
           It learns how you normally work, then tells you when you&rsquo;ve
@@ -94,34 +123,37 @@ export default function Home() {
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
           Baseline reads the rhythm of your keyboard, mouse, and window focus.
-          v1 gives you four ways to see that: Fragments, Trace, Activity, and
-          Switch Rate, all working from your first day. Drift, the two-week
-          comparison against your own normal, is next.
+          Fragments tells you your focus came in eleven pieces today, longest
+          block nine minutes — no time tracker does that. Activity and Trace
+          are free, forever. Bedrock, Residue, Core, and Rhythm Map round out
+          the rest. Drift, the two-week comparison against your own normal,
+          is next.
         </p>
         <div className="mt-9">
           <SignupForm location="hero" />
         </div>
       </section>
 
-      {/* 2 — Roadmap */}
+      {/* 2 — Free forever */}
       <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="v1">What ships first</SectionHeading>
+        <SectionHeading eyebrow="Free, forever">
+          Table stakes, not a hook
+        </SectionHeading>
         <p className="mb-8 max-w-2xl text-muted">
-          Four features, working from day one, so you&rsquo;re not waiting on
-          two weeks of calibration to see anything. Try them free for a week.
-          We won&rsquo;t ask for a card.
+          Activity and Trace are free forever, not a trial and not a tease.
+          Every time tracker gives these away — ActivityWatch, RescueTime,
+          Toggl, Clockify. Charging for them here would just invite a
+          comparison Baseline loses.
         </p>
         <div className="grid gap-6 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
+          {FREE_FEATURES.map((feature) => (
             <div
               key={feature.name}
               className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)]"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold">{feature.name}</h3>
-                <span className="shrink-0 border-[3px] border-ink bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
-                  Included
-                </span>
+                <FreeBadge />
               </div>
               <p className="text-sm leading-relaxed text-muted">
                 {feature.description}
@@ -131,7 +163,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3 — What it sees vs. what it never sees */}
+      {/* 3 — Fragments, headlined */}
+      <section className="border-t border-border py-16 sm:py-20">
+        <SectionHeading eyebrow="The one thing nothing else does">
+          Fragments
+        </SectionHeading>
+        <div className="border-[3px] border-ink bg-white p-8 shadow-[8px_8px_0_0_var(--ink)]">
+          <div className="flex items-baseline gap-3">
+            <span className="font-sans text-5xl font-bold tabular-nums sm:text-6xl">
+              11
+            </span>
+            <span className="text-lg text-muted">pieces today</span>
+          </div>
+          <p className="mt-2 font-mono text-sm text-muted">
+            Longest block: nine minutes.
+          </p>
+          <p className="mt-6 max-w-xl text-base leading-relaxed">
+            Every tracker reports total focus time. None of them tell you
+            whether it arrived in chunks or shards.
+          </p>
+          <div className="mt-6">
+            <IncludedBadge />
+          </div>
+        </div>
+      </section>
+
+      {/* 4 — Bedrock, Residue, Core */}
+      <section className="border-t border-border py-16 sm:py-20">
+        <SectionHeading eyebrow="Paid">
+          The rest of what held the day together
+        </SectionHeading>
+        <div className="grid gap-6 sm:grid-cols-3">
+          {PAID_FEATURES.map((feature) => (
+            <div
+              key={feature.name}
+              className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)]"
+            >
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-lg font-bold">{feature.name}</h3>
+                <IncludedBadge />
+              </div>
+              <p className="text-sm font-medium leading-relaxed">
+                {feature.headline}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-muted">
+                {feature.subtitle}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5 — What it sees vs. what it never sees */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Capture">
           What it sees. What it never sees.
@@ -181,16 +264,16 @@ export default function Home() {
         </p>
       </section>
 
-      {/* 4 — Why not a time tracker */}
+      {/* 6 — Why not a time tracker */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Positioning">
           Why this isn&rsquo;t a time tracker
         </SectionHeading>
         <p className="mb-8 max-w-2xl text-muted">
           Time tracking is commoditised and free. Baseline includes it anyway,
-          because the app would feel stripped without it. But a total isn&rsquo;t
-          a reference point. It tells you where the hours went, not whether the
-          day itself was normal for you.
+          because the app would feel stripped without it. But a total
+          isn&rsquo;t a reference point. It tells you where the hours went, not
+          whether the day itself was normal for you.
         </p>
 
         <div className="overflow-x-auto">
@@ -226,22 +309,25 @@ export default function Home() {
         </p>
       </section>
 
-      {/* 5 — Rhythm Map (premium, not part of the trial) */}
+      {/* 7 — Rhythm Map (paid, ships ungated from day one) */}
       <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Premium">
+        <SectionHeading eyebrow="Paid">
           When you actually sustain work
         </SectionHeading>
         <p className="mb-8 max-w-2xl text-muted">
-          Weekday by hour, thirty days deep. Most people are wrong about when
-          they actually do their best work. This chart settles it, and it&rsquo;s
-          what you&rsquo;ll compare against on the days that feel off. It needs
-          more history than a week can give you, so it isn&rsquo;t part of the
-          trial. You buy it once, separately.
+          Thirty days of your own history, weekday by hour. Most people think
+          they&rsquo;re sharpest at 9am and the chart says 4pm. When a day
+          feels wrong, this is what it looked wrong against. It fills in as
+          you go — even your first session shows something, it just gets
+          sharper with time.
         </p>
         <RhythmMap />
+        <div className="mt-6">
+          <IncludedBadge />
+        </div>
       </section>
 
-      {/* 6 — Honest status */}
+      {/* 8 — Honest status */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Status">Where this actually is</SectionHeading>
         <div className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)] sm:p-7">
@@ -258,31 +344,12 @@ export default function Home() {
             </div>
             <div className="sm:flex sm:gap-6">
               <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Platform
-              </dt>
-              <dd className="leading-relaxed">
-                Windows 10 and 11 only.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Installer
-              </dt>
-              <dd className="leading-relaxed">
-                Unsigned. Windows SmartScreen will warn you and hide the run
-                button behind &ldquo;More info&rdquo;. That&rsquo;s expected.
-                Code signing costs money, and I&rsquo;d rather spend it once I
-                know this is worth building on.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
                 Day one
               </dt>
               <dd className="leading-relaxed">
-                Fragments, Trace, Activity, and Switch Rate work from your very
-                first session. No two-week wait. Rhythm Map, the premium one,
-                still wants a few weeks of history before it means much.
+                Activity, Trace, and Fragments work from your first session.
+                Bedrock, Residue, and Core are close behind. Rhythm Map fills
+                in as you go — even day one shows something.
               </dd>
             </div>
             <div className="sm:flex sm:gap-6">
@@ -290,8 +357,8 @@ export default function Home() {
                 Cost
               </dt>
               <dd className="leading-relaxed">
-                Fragments, Trace, Activity, and Switch Rate: free for 7 days,
-                no card needed. Rhythm Map is a one-time purchase on top.
+                Activity and Trace: free, forever. Fragments, Bedrock,
+                Residue, Core, and Rhythm Map: free 7-day trial, no card.
               </dd>
             </div>
           </dl>
@@ -299,7 +366,10 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-border py-10 text-xs text-muted">
-        <p>Baseline finds anomalies against your own history. It runs locally.</p>
+        <p>
+          Baseline finds anomalies against your own history. It runs on your
+          machine.
+        </p>
       </footer>
     </main>
   );

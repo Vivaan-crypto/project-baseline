@@ -155,7 +155,19 @@ CREATE TABLE baseline (
 
 CREATE TABLE sessions (ts REAL, event TEXT);  -- pause / resume / start / stop
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);  -- schema_version, last_rollup
+
+CREATE TABLE blocks (
+  start_ts    REAL,
+  end_ts      REAL,
+  category    TEXT,
+  top_process TEXT,
+  active_secs REAL,
+  open_ended  INTEGER,   -- 1 only for the last row of an in-progress day
+  PRIMARY KEY (start_ts)
+);
 ```
+
+**`blocks` added 2026-08-06** (engine/ implementation), not part of the original schema. Bedrock's 14-day sparkline and Core's 30-day trend both need block-level data, and raw events are hard-deleted at 30 days (rule 6) — recomputing `focus_blocks()` from raw events works for a user's first 30 days, then silently breaks. `blocks` is written at rollup time alongside `buckets`, same size class (tens of rows/day), permanent, survives raw deletion. One row per output of `engine.blocks.blocks()` (see engine/blocks.py) — every second of active time in exactly one row.
 
 **Baseline is keyed by hour slot.** A 9am normal and an 11pm normal are different distributions. Comparing a late session against an all-day average generates constant false drift.
 
@@ -167,8 +179,8 @@ CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);  -- schema_version, last_r
 ### Known traps
 - **Clock jumps.** NTP correction and DST move `time.time()` backward, producing negative intervals that corrupt variance. Store a monotonic counter alongside wall time; discard negative or absurd intervals.
 - **Duplicate collectors.** Task Scheduler plus a manual run means doubled events. PID lock file at startup, exit if held.
-- **Sleep/hibernate.** A closed laptop produces one enormous gap. `IDLE_GAP` catches it, but rollup must skip those spans explicitly, not average across them.
-- **Focus blocks must be computed inside active segments.** Naively spanning window events includes idle time and yields impossible results like focus exceeding active time. Already hit once.
+- **Sleep/hibernate.** A closed laptop produces one enormous gap. `IDLE_GAP` catches it, but rollup must skip those spans explicitly, not average across them. Value: 300s (5 min), proposed in `engine/config.py` 2026-08-06 — this document never gave one before. Calibrated so `mock/mockgen.py`'s own simulated think-pauses (capped at 240s) don't spuriously fragment a block; unvalidated against real data (assumption 1, §10).
+- **Focus blocks must be computed inside active segments.** Naively spanning window events includes idle time and yields impossible results like focus exceeding active time. Already hit once. `engine.blocks.blocks()` (2026-08-06) is the implementation — presence comes only from `keys`/`mouse` timestamps via `engine.activity.active_runs()`, never from a `windows` row alone.
 - **Inter-key intervals: filter to 0.02–2.0s.** Longer gaps are thinking, not typing, and they swamp the variance signal.
 - **Schema version in `meta` from day one.** Retrofitting migrations onto users with existing data is miserable.
 
@@ -235,9 +247,9 @@ Activity and Trace stay free forever — table stakes, the app feels broken with
 
 All derive from data the collector already captures (`keys`, `mouse`, `windows`) — no new capture required for any of them.
 
-**Fragments** — how many separate blocks focus came in, and how long each lasted. Histogram of block lengths, bucketed `<5m / 5–15m / 15–30m / 30–60m / 1–2h / 2h+`; blocks under 15m rendered in the deviation colour. Headline number: block count + longest, e.g. "11 pieces. Longest 9 minutes." **The only paid feature with no free equivalent anywhere — gets headline treatment on the landing page, not one card among four.** Status: `svg_blocks()` in dashboard.py, working.
+**Fragments** — how many separate blocks focus came in, and how long each lasted. Histogram of block lengths, bucketed `<5m / 5–15m / 15–30m / 30–60m / 1–2h / 2h+`; blocks under 15m rendered in the deviation colour. Headline number: block count + longest, e.g. "11 pieces. Longest 9 minutes." **The only paid feature with no free equivalent anywhere — gets headline treatment on the landing page, not one card among four.** Status: implemented and tested, `engine.features.fragments.fragments()` (2026-08-06) — not yet wired to a real collector, since none exists. `dashboard.py`/`svg_blocks()` referenced here previously never existed anywhere in this repo; don't assume other "Status" lines below describe real code either without checking.
 
-**Bedrock** — the single longest unbroken block that day, the solid layer under everything. One large number, plus the app and time window it happened in, with a 14-day sparkline beneath. Headline: "Bedrock: 12 minutes, 10:15–10:27, Code.exe." Definition: longest single block from the same `focus_blocks()` output Fragments uses — must be a `focus`-category block; a two-hour Discord session is not bedrock. Status: trivial from existing code, not surfaced yet. Needs one sentence of explanation on first sight — a subtitle under the number, not a tooltip.
+**Bedrock** — the single longest unbroken block that day, the solid layer under everything. One large number, plus the app and time window it happened in, with a 14-day sparkline beneath. Headline: "Bedrock: 12 minutes, 10:15–10:27, Code.exe." Definition: longest single block from the same `focus_blocks()` output Fragments uses — must be a `focus`-category block; a two-hour Discord session is not bedrock. Status: implemented and tested, `engine.features.bedrock.bedrock()` (2026-08-06). Needs one sentence of explanation on first sight — a subtitle under the number, not a tooltip.
 
 **Residue** — after an interruption, how long before you're back in a sustained block. Per-interruption list with duration, plus a daily median; grouped by source app so "Slack cost you 14 minutes of residue today" is derivable. Headline: "That standup left 14 minutes of residue."
 
@@ -247,11 +259,11 @@ Definitions — visible in the UI, not just the code:
 - *Residue* = time from returning to the focus app until settled. If they never settle before the next interruption, mark it unsettled and exclude from the median — do not treat it as zero.
 - Cap any single residue measurement at 30 minutes; beyond that they moved on to something else.
 
-Status: not built — needs a new function over `focus_blocks()`. This is Sophie Leroy's attention residue; the term is accurate, not just evocative borrowing. Do not cite research in the UI and do not make claims about cognition — describe the measurement only. This is a direct application of hard rule 4 (no clinical language): Residue is the feature most tempted to drift into "this is bad for your brain" framing, and it must not.
+Status: implemented and tested, `engine.features.residue.residue()` (2026-08-06) — confirmed semantics: elapsed time from first return to final settle, not a flat SETTLE_MINUTES (bouncing before settling is why "14 minutes" is a producible number). This is Sophie Leroy's attention residue; the term is accurate, not just evocative borrowing. Do not cite research in the UI and do not make claims about cognition — describe the measurement only. This is a direct application of hard rule 4 (no clinical language): Residue is the feature most tempted to drift into "this is bad for your brain" framing, and it must not.
 
-**Core** — the share of the active day that held together. One percentage, plus a 30-day trend line. Headline: "38% core." Definition: active seconds inside `focus` blocks ≥ 25 minutes, over total active seconds. The 25-minute threshold is tunable and must be visible in the UI. Status: trivial from existing code, not surfaced yet. Needs one sentence of explanation on first sight, same as Bedrock.
+**Core** — the share of the active day that held together. One percentage, plus a 30-day trend line. Headline: "38% core." Definition: active seconds inside `focus` blocks ≥ 25 minutes, over total active seconds. The 25-minute threshold is tunable and must be visible in the UI. Status: implemented and tested, `engine.features.core.core()` (2026-08-06). Needs one sentence of explanation on first sight, same as Bedrock.
 
-**Rhythm Map** — weekday × hour intensity of sustained input, over whatever history exists. Heatmap, **single-hue ramp, light to dark** — the earlier multi-hue (yellow/green/blue) version had no natural intensity ordering and didn't read; reverted 2026-08-06. **Ship it from day one.** It looks thin before ~2 weeks, which is a data problem, not a shipping problem — label it "fills in as you go" and show whatever history exists. Do not gate it behind a waiting period or exclude it from any trial. Status: `svg_rhythm()` in dashboard.py, working; needed the colour fix (done 2026-08-06).
+**Rhythm Map** — weekday × hour intensity of sustained input, over whatever history exists. Heatmap, **single-hue ramp, light to dark** — the earlier multi-hue (yellow/green/blue) version had no natural intensity ordering and didn't read; reverted 2026-08-06. **Ship it from day one.** It looks thin before ~2 weeks, which is a data problem, not a shipping problem — label it "fills in as you go" and show whatever history exists. Do not gate it behind a waiting period or exclude it from any trial. Status: implemented and tested, `engine.features.rhythm_map.rhythm_grid()` (2026-08-06), aggregating real block-derived active seconds rather than raw event counts; colour fix done same day.
 
 ### Build order
 1. **Bedrock and Core.** Both a few lines over `focus_blocks()` — fastest path to two new paid features.
@@ -280,7 +292,7 @@ These weren't addressed by the 2026-08-06 spec and aren't dropped — just not y
 ### Landing page state (2026-08-06)
 Main pitch: Fragments headlined, Bedrock/Residue/Core/Rhythm Map as the rest of the paid set, Activity and Trace stated explicitly as free forever (not just "free for now"). Rhythm Map ships ungated with "fills in as you go" labeling — no more "needs more history than a trial gives you" exclusion. No Architecture/data-flow diagram on the page; the Capture section already covers "data never leaves the device" without needing one.
 
-**Open, unresolved as of this section:** whether Bedrock/Residue/Core — all marked not-built or not-surfaced above — get advertised on the public landing page before they exist, or whether the page only reflects what's actually shippable today (Fragments, Activity, Trace, Rhythm Map). Don't assume either answer; it changes what the page says.
+**Resolved (2026-08-06):** whether Bedrock/Residue/Core get advertised on the public landing page before they exist — yes, list all five as included/coming; that decision stood before the computation existed and stands now that it does. Separately, as of the same date, the computation itself is no longer "before they exist" — `engine/` implements and tests all five (see their Status lines above). What's still genuinely missing is `collector/`: no real Windows capture exists, so nothing here runs against a real user's actual keys/mouse/windows yet. Don't read "implemented" as "live for a real user" — those are different claims.
 
 ---
 
@@ -373,6 +385,11 @@ Do not reopen without a written reason.
 | Fragments, Bedrock, Residue, Core, Rhythm Map are the paid set; this **supersedes** the earlier "Rhythm Map as free hook" decision (2026-08-06) | Fragments is the only one of the five with no free consumer equivalent anywhere, which is now the actual pitch; Rhythm Map moved to paid on 2026-08-04 and stays there |
 | Rhythm Map heat scale reverted to single-hue light-to-dark, replacing the multi-hue Cobalt→Lime ramp (2026-08-06) | The multi-hue version had no natural intensity ordering and didn't read as a heatmap, despite being an attempt to fix an earlier low-contrast single-hue version |
 | Rhythm Map ships ungated from day one, "fills in as you go" instead of waiting behind a history requirement (2026-08-06) | Reverses the 2026-08-04 "not part of the trial, needs more history than a week" exclusion — thin-early-data is a data problem, not a shipping problem, and nobody buys a feature they've never seen run |
+| `engine/` built from scratch (2026-08-06) — `focus_blocks()`, all five paid features, and Rhythm Map's real aggregation, with a 46-case pytest suite | The site had marketed all five features as "Included" with zero real implementation anywhere in the repo; `dashboard.py`/`focus_blocks()` referenced in the spec never existed. `collector/` (real Windows capture) deliberately not built in the same pass — engine correctness is provable against synthetic fixtures without it |
+| `blocks()` builds a strict, non-overlapping partition of ALL categories (not per-category independent merges) | A per-category independent merge would double-represent sub-tolerance excursions — once absorbed into the enclosing block, once as their own tiny block — breaking Trace and making total active time ambiguous |
+| Residue = elapsed time from first return to final settle, confirmed directly, not a flat 3:00 | A flat model couldn't produce the spec's own "14 minutes of residue" example; bouncing (return, distracted again, return again) before finally settling is what makes that number real |
+| Cross-focus-app switches (e.g. Code.exe → WindowsTerminal.exe) continue the same block | A block's identity is category, not app — the alternative would fragment ordinary editor/terminal workflows and understate Fragments/Core |
+| `blocks` table added to §5's Tier 2 schema (2026-08-06) | Bedrock's 14-day sparkline and Core's 30-day trend both need block-level data to outlive the 30-day raw-event TTL (rule 6) |
 
 ---
 

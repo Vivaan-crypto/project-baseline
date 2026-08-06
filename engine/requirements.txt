@@ -1,0 +1,7 @@
+# Runtime dependencies for engine/. Keep this minimal — AGENTS.md §12:
+# "Python: type hints, stdlib-first, minimal dependencies."
+#
+# tzdata: zoneinfo (stdlib) has no IANA timezone data on Windows, only on
+# Linux/macOS where the OS ships it. engine.timegrid needs real DST-aware
+# zones for Rhythm Map's weekday/hour bucketing. Pure data, no native code.
+tzdata

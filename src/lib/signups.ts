@@ -5,7 +5,7 @@
  * to over its plain REST interface, so swapping providers means rewriting this
  * file and nothing else.
  *
- * Scope note (AGENTS.md §4): `site/` has zero connection to user event data.
+ * Scope note (AGENTS.md §4): the marketing site has zero connection to user event data.
  * The only thing that ever lands here is an email address someone typed into a
  * form on this page.
  */

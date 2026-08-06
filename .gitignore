@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -11,14 +11,20 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
+
+# python (collector/, engine/)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
 
 # misc
 .DS_Store
@@ -35,6 +41,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# local event databases — never commit, mock included
+*.db
 
 # typescript
 *.tsbuildinfo

@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/*
+ * Baseline brand system v1.0 — see docs/BRAND_KIT.html and AGENTS.md's
+ * "Brand system" section. Tokens below are transcribed from that kit's
+ * computed styles, not eyeballed.
+ */
+:root {
+  /* Base */
+  --ink: #111111;
+  --paper: #ede9dc;
+  --white: #ffffff;
+
+  /* Signal — lime carries action & focus, cobalt carries data & links,
+     red is destructive only. Never swap these roles. */
+  --lime: #d6fb3d;
+  --cobalt: #2d4eff;
+  --red: #ff4a2b;
+
+  /* Structural roles */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--white);
+  --muted: #6b6659; /* desaturated ink — body copy on paper, not a signal color */
+  --border: var(--ink);
+
+  /* Marks intentional absence (e.g. "never captured") — deliberately muted,
+     not red. Red means destructive/error; an absence here is a feature. */
+  --negative: var(--muted);
+
+  /* Hard-shadow system: offset only, never blurred. */
+  --border-w: 3px;
+  --shadow-sm: 5px 5px 0 0 var(--ink);
+  --shadow-lg: 8px 8px 0 0 var(--ink);
+
+  /*
+   * Cobalt -> Lime for the Rhythm Map: both are real brand signal colors
+   * (data & links -> action & focus), so "low" and "peak" read as on-brand
+   * endpoints rather than an arbitrary gradient. Interpolated along the hue
+   * path blue -> teal -> green -> lime, not a straight RGB blend — blending
+   * blue and yellow-green directly in RGB crosses through a muddy gray
+   * midpoint, which is exactly the low-contrast problem this scale exists
+   * to avoid.
+   */
+  --heat-0: #ede9dc;
+  --heat-1: #93a0ec;
+  --heat-2: #57afdb;
+  --heat-3: #39c67f;
+  --heat-4: #d6fb3d;
+
+  /* Motion tokens (brand kit §09) */
+  --ease-press: linear;
+  --dur-press: 80ms;
+  --dur-reveal: 120ms;
+  --dur-pulse: 1400ms;
+  --dur-caret: 1100ms;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-white: var(--white);
+  --color-lime: var(--lime);
+  --color-cobalt: var(--cobalt);
+  --color-red: var(--red);
+  --color-negative: var(--negative);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* No rounded corners, no blurred shadows, anywhere — brand kit §01 "DON'T". */
+* {
+  border-radius: 0 !important;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Press interaction (brand kit §09): elements shift toward their offset
+ * shadow and the shadow itself vanishes, 80ms linear, no easing tricks.
+ * Apply alongside an explicit shadow-[...] utility set to --shadow-sm/-lg.
+ */
+.press {
+  transition:
+    transform var(--dur-press) var(--ease-press),
+    box-shadow var(--dur-press) var(--ease-press);
+}
+.press:active {
+  transform: translate(5px, 5px);
+  box-shadow: none;
+}
+
+/* Live-data pulse — everything else on the page stays perfectly still. */
+@keyframes data-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.pulse {
+  animation: data-pulse var(--dur-pulse) ease-in-out infinite;
+}

@@ -10,7 +10,7 @@ that conflict directly and chose to use it there anyway — this script and the
 JSON it produces exist because of that explicit call, not despite it. Don't
 "fix" this without checking with him first.
 
-The output stays clearly synthetic: site/_components/rhythm-map.tsx keeps the
+The output stays clearly synthetic: _components/rhythm-map.tsx keeps the
 "Illustrative — not captured data" badge regardless of what feeds the grid.
 """
 
@@ -22,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "mock_events.db"
-OUT_PATH = Path(__file__).parent.parent / "site" / "src" / "app" / "_data" / "rhythm-map.json"
+OUT_PATH = Path(__file__).parent.parent / "src" / "app" / "_data" / "rhythm-map.json"
 
 DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 

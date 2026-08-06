@@ -68,12 +68,14 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 ## 4. Architecture
 
 ```
-baseline/
-├── collector/          Python. Passive capture → local SQLite. AGPL, public.
-├── engine/             Python. Rollup, baseline computation, drift detection.
-├── desktop/            Tauri shell + Next.js static export. NO SERVER.
-└── site/               Next.js on Vercel. Marketing + beta signup only.
+baseline/                Next.js on Vercel — marketing + beta signup. Lives at
+│                         repo root: package.json, src/, next.config.ts, etc.
+├── collector/           Python. Passive capture → local SQLite. AGPL, public.
+├── engine/              Python. Rollup, baseline computation, drift detection.
+└── desktop/             Tauri shell + Next.js static export. NO SERVER.
 ```
+
+The marketing site is the repo root on purpose, not a `site/` subfolder — it was moved there 2026-08-05 so Vercel deploys with zero Root Directory configuration. `collector/`, `engine/`, and `desktop/` are separate Python/Tauri subdirectories that never touch the Next.js build.
 
 ### collector/
 Windows-first (`pynput` + Win32 via ctypes). macOS is ~15 lines different (`NSWorkspace.frontmostApplication` via pyobjc) but blocked on notarization and the Accessibility/Input Monitoring permission flow. Do not start macOS work without an explicit decision.
@@ -101,15 +103,15 @@ Your web reflexes will betray you here:
 
 Writing an API route in `desktop/` means you've made a mistake. Stop and reconsider.
 
-### site/
+### Marketing site (repo root)
 The only thing touching Vercel. Static marketing, beta signup, download. Zero connection to user event data.
 
-**Vercel plugin** — activate before any work in `site/`:
+**Vercel plugin** — activate before any work here:
 ```
 /plugin marketplace add vercel/plugin
 /plugin install vercel
 ```
-Scope it to `site/` only. Never deploy `desktop/` to Vercel. If a task appears to need a hosted backend for the desktop app, the task is wrong, not the architecture.
+Never deploy `desktop/` to Vercel. If a task appears to need a hosted backend for the desktop app, the task is wrong, not the architecture.
 
 ---
 
@@ -247,7 +249,7 @@ The tiers above are the long-term plan; they are not what ships first. The actua
 - **Activity** — where the time went
 - **Switch Rate** — switches per hour (the simple count, not yet the settle-time-to-minutes conversion described as Switch Cost above)
 
-`site/` reflects this: the landing page's main pitch is these four, framed as "coming" since none of them exist yet, with 7-day-trial messaging attached. Rhythm Map still appears lower on the page (mock data pipeline included) but is now framed as Premium — a separate one-time purchase, not part of the trial. No Architecture/data-flow diagram on the page anymore; the Capture section already covers "data never leaves the device" without needing a separate diagram.
+The landing page reflects this: the main pitch is these four, with 7-day-trial messaging attached. Rhythm Map still appears lower on the page (mock data pipeline included) but is now framed as Premium — a separate one-time purchase, not part of the trial. No Architecture/data-flow diagram on the page anymore; the Capture section already covers "data never leaves the device" without needing a separate diagram.
 
 ---
 
@@ -255,7 +257,7 @@ The tiers above are the long-term plan; they are not what ships first. The actua
 
 Build in this order. Do not skip ahead.
 
-1. **Landing page** (`site/`) — tests assumption #3. Explains honestly what is captured, shows a real Rhythm Map screenshot from Vivaan's own data, download button, beta signup. The privacy disclosure goes above the fold; soft-pedalling it invalidates the test.
+1. **Landing page** (repo root) — tests assumption #3. Explains honestly what is captured, shows a real Rhythm Map screenshot from Vivaan's own data, download button, beta signup. The privacy disclosure goes above the fold; soft-pedalling it invalidates the test.
 2. **Windows desktop** — packaged with PyInstaller into a single .exe. Unsigned for v0; the download page must warn about the SmartScreen prompt in advance, which converts better than letting users hit it cold.
 3. **Chrome extension** — optional middle tier. One-click install, browser-only signal, local storage. Lower friction, but it only sees the browser.
 4. **macOS** — blocked on the $99 developer account and the Accessibility/Input Monitoring permission flow. Gate on landing-page signup counts.
@@ -333,13 +335,14 @@ Do not reopen without a written reason.
 | Windows first, macOS gated | Notarization plus the permission flow is a brutal first run |
 | No web app version | A browser tab cannot see OS-level focus or app switching |
 | 7-day free trial for Fragments/Trace/Activity/Switch Rate; Rhythm Map moved to a paid one-time purchase instead of trial-gated | These four are single-day descriptive stats, not baseline comparisons — useful from day one, unlike Drift or Rhythm Map, which need real history to say anything |
+| Marketing site moved from `site/` to the repo root (2026-08-05) | `main` was stale and had no `site/` folder at all, so Vercel's Root Directory setting couldn't be pointed at it reliably; root-level deploy needs no special config |
 | Brand kit v1.0 (Ink/Paper/Lime/Cobalt/Red, Space Grotesk + JetBrains Mono, hard borders/offset shadows) adopted, superseding the earlier teal/Geist palette | See §14 — full spec in `docs/BRAND_KIT.html` |
 
 ---
 
 ## 14. Brand system
 
-Full spec: [`docs/BRAND_KIT.html`](docs/BRAND_KIT.html) — a self-extracting bundle, open it in a browser rather than grepping it; the readable content only exists after its own JS unpacks it. Applies to every surface with a UI: `site/` today, `desktop/` once it exists.
+Full spec: [`docs/BRAND_KIT.html`](docs/BRAND_KIT.html) — a self-extracting bundle, open it in a browser rather than grepping it; the readable content only exists after its own JS unpacks it. Applies to every surface with a UI: the marketing site today, `desktop/` once it exists.
 
 ### Palette
 | Role | Name | Hex | Usage |
@@ -368,4 +371,4 @@ Full spec: [`docs/BRAND_KIT.html`](docs/BRAND_KIT.html) — a self-extracting bu
 - **Red is destructive-only.** Places that mark an *intentional* absence — "never captured," "no server," privacy guarantees — stay muted/neutral, not red. An absence there is a feature, not an error; coloring it red would misrepresent it as a warning.
 - Wordmark: the word sits on a lime bar (the "baseline"). Never remove the bar, never round it, never italicize the word.
 
-Implemented in `site/src/app/globals.css` (`--ink`, `--paper`, `--lime`, `--cobalt`, `--red`, `--negative`, `--shadow-sm`, `--shadow-lg`, the `.press` and `.pulse` utilities) — treat that file as the source of truth for exact token values, this section as the rationale for how to use them.
+Implemented in `src/app/globals.css` (`--ink`, `--paper`, `--lime`, `--cobalt`, `--red`, `--negative`, `--shadow-sm`, `--shadow-lg`, the `.press` and `.pulse` utilities) — treat that file as the source of truth for exact token values, this section as the rationale for how to use them.

@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 const TITLE = "Baseline — it learns how you normally work";
 const DESCRIPTION =
-  "Baseline reads the rhythm of your keyboard, mouse, and window focus. v1 gives you four ways to see your day clearly: Fragments, Trace, Activity, and Switch Rate, free for 7 days from the moment you install it. It runs entirely on your machine.";
+  "Baseline reads the rhythm of your keyboard, mouse, and window focus. Your focus came in eleven pieces today, longest block nine minutes — that's the kind of thing it tells you. Activity and Trace are free forever. Runs entirely on your machine.";
 
 export const metadata: Metadata = {
   // TODO: point at the real domain once it's registered. Wrong value here only

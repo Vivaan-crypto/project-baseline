@@ -34,19 +34,17 @@
   --shadow-lg: 8px 8px 0 0 var(--ink);
 
   /*
-   * Cobalt -> Lime for the Rhythm Map: both are real brand signal colors
-   * (data & links -> action & focus), so "low" and "peak" read as on-brand
-   * endpoints rather than an arbitrary gradient. Interpolated along the hue
-   * path blue -> teal -> green -> lime, not a straight RGB blend — blending
-   * blue and yellow-green directly in RGB crosses through a muddy gray
-   * midpoint, which is exactly the low-contrast problem this scale exists
-   * to avoid.
+   * Single-hue ramp, light to dark, for the Rhythm Map (AGENTS.md §8,
+   * revised 2026-08-06). The earlier multi-hue Cobalt->Lime version had no
+   * natural intensity ordering and didn't read as a heatmap — a two-hue
+   * gradient looks like a legend for categories, not a single measurement
+   * getting bigger. Lime family, light paper to deep saturated forest-lime.
    */
   --heat-0: #ede9dc;
-  --heat-1: #93a0ec;
-  --heat-2: #57afdb;
-  --heat-3: #39c67f;
-  --heat-4: #d6fb3d;
+  --heat-1: #d7e8a0;
+  --heat-2: #aad35c;
+  --heat-3: #74ad2e;
+  --heat-4: #3d6b12;
 
   /* Motion tokens (brand kit §09) */
   --ease-press: linear;

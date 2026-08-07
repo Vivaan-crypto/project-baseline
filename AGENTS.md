@@ -71,7 +71,10 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 baseline/                Next.js on Vercel — marketing + beta signup. Lives at
 │                         repo root: package.json, app/, next.config.ts, etc.
 ├── collector/           Python. Passive capture → local SQLite. AGPL, public.
+│                         NOT BUILT YET — nothing captures real events.
 ├── engine/              Python. Rollup, baseline computation, drift detection.
+│                         Built 2026-08-06. Pure functions + engine/export.py CLI.
+├── tests/engine/        pytest, hand-built fixtures. 65 cases.
 └── desktop/             Tauri shell + Next.js static export. NO SERVER.
 ```
 
@@ -179,7 +182,17 @@ CREATE TABLE blocks (
 ### Known traps
 - **Clock jumps.** NTP correction and DST move `time.time()` backward, producing negative intervals that corrupt variance. Store a monotonic counter alongside wall time; discard negative or absurd intervals.
 - **Duplicate collectors.** Task Scheduler plus a manual run means doubled events. PID lock file at startup, exit if held.
-- **Sleep/hibernate.** A closed laptop produces one enormous gap. `IDLE_GAP` catches it, but rollup must skip those spans explicitly, not average across them. Value: 300s (5 min), proposed in `engine/config.py` 2026-08-06 — this document never gave one before. Calibrated so `mock/mockgen.py`'s own simulated think-pauses (capped at 240s) don't spuriously fragment a block; unvalidated against real data (assumption 1, §10).
+- **Sleep/hibernate.** A closed laptop produces one enormous gap. `IDLE_GAP` catches it, but rollup must skip those spans explicitly, not average across them. Value: 300s (5 min), proposed in `engine/config.py` 2026-08-06 — this document never gave one before. Calibrated so `mock/mockgen.py`'s own simulated think-pauses (capped at 240s) don't spuriously fragment a block; **still unvalidated against real data** (assumption 1, §10), and it is the single most consequential number in the engine. Measured sensitivity on the mock set, same events throughout:
+
+  | `IDLE_GAP` | median Fragments/day | median Bedrock | median Core |
+  |---|---|---|---|
+  | 60s | 97 | 21m | 0% |
+  | 120s | 25 | 54m | 51% |
+  | 180s | 13 | 96m | 78% |
+  | **300s (current)** | **11** | **105m** | **86%** |
+  | 900s | 10 | 116m | 86% |
+
+  The curve saturates past ~240s, which looks like validation but is not: mockgen caps its think-pauses at 240s by construction, so this data contains almost no gaps in the 300–900s band to discriminate with. What the table does establish is that the choice is load-bearing — one unvalidated constant is the difference between "82% core" and "7% core" on the same day. Tune it from the dashboard's Thresholds panel against real capture before trusting any Core or Bedrock figure.
 - **Focus blocks must be computed inside active segments.** Naively spanning window events includes idle time and yields impossible results like focus exceeding active time. Already hit once. `engine.blocks.blocks()` (2026-08-06) is the implementation — presence comes only from `keys`/`mouse` timestamps via `engine.activity.active_runs()`, never from a `windows` row alone.
 - **Inter-key intervals: filter to 0.02–2.0s.** Longer gaps are thinking, not typing, and they swamp the variance signal.
 - **Schema version in `meta` from day one.** Retrofitting migrations onto users with existing data is miserable.
@@ -241,6 +254,10 @@ Names are measurement vocabulary — and geological, deliberately: Baseline is a
 
 Activity and Trace stay free forever — table stakes, the app feels broken without them, and they're commoditized anyway (ActivityWatch, RescueTime, Toggl, and Clockify all give them away). Charging for them invites a comparison Baseline loses. The paid set is five features with no free consumer equivalent, which is the actual pitch.
 
+**Activity** — time by app and by category. Status: implemented and tested, `engine.features.activity.activity()` (2026-08-06). Attribution is per-**process**, not per-block-category: a sub-tolerance flick to Chrome inside a focus block credits those seconds to `chrome.exe` here, while Fragments and Core still treat the span as unbroken focus. Both are correct for their own question and the totals reconcile — Activity's total equals the denominator Core divides by. Don't "fix" the apparent discrepancy; it's tested (`tests/engine/test_activity.py`).
+
+**Trace** — the day as a timeline. Status: implemented and tested, `engine.features.trace.trace()` (2026-08-06). Emits idle gaps as explicit `away` entries, because the block list alone can't distinguish six blocks back-to-back from six blocks spread across twelve hours. Leading/trailing absences are deliberately *not* emitted: time before the first input is no-coverage, not measured idleness.
+
 **Switch Rate — the v0-era "switches per hour" count — is dropped.** Residue supersedes it with an actual definition (settle time after an interruption) instead of a raw count nobody could act on.
 
 ### The five paid features
@@ -259,7 +276,15 @@ Definitions — visible in the UI, not just the code:
 - *Residue* = time from returning to the focus app until settled. If they never settle before the next interruption, mark it unsettled and exclude from the median — do not treat it as zero.
 - Cap any single residue measurement at 30 minutes; beyond that they moved on to something else.
 
-Status: implemented and tested, `engine.features.residue.residue()` (2026-08-06) — confirmed semantics: elapsed time from first return to final settle, not a flat SETTLE_MINUTES (bouncing before settling is why "14 minutes" is a producible number). This is Sophie Leroy's attention residue; the term is accurate, not just evocative borrowing. Do not cite research in the UI and do not make claims about cognition — describe the measurement only. This is a direct application of hard rule 4 (no clinical language): Residue is the feature most tempted to drift into "this is bad for your brain" framing, and it must not.
+Status: implemented and tested, `engine.features.residue.residue()` (2026-08-06) — confirmed semantics: elapsed time from first return to final settle, not a flat SETTLE_MINUTES (bouncing before settling is why "14 minutes" is a producible number).
+
+> **⚠ Open problem, found 2026-08-06 when the dashboard first rendered real output.** On the 30-day mock set, **all 160 settled interruptions measured exactly 180.0s** — zero variance. The implementation is faithful to the definition (the multi-hop test proves it returns >180s when bouncing actually occurs); the *definition* is what produces a constant. `residue_secs` has a hard floor of `SETTLE_MINUTES`, because "settled" means "sustained that long", so anyone who returns and simply gets on with it scores exactly the floor. The landing page's "That standup left 14 minutes of residue" therefore cannot render on data like this.
+>
+> Mitigation shipped, not a resolution: `ResidueMeasurement.churn_secs` records time from returning until the block that actually *stuck* began — 0 for a clean return, positive only on a bounce. That is the component carrying information. The dashboard shows both and says plainly when churn is zero across the board.
+>
+> Needs a decision: either (a) redefine residue as churn (drops the floor, makes the headline number informative, contradicts the literal spec text), (b) keep both and headline churn, or (c) keep as-is and accept that the number is usually a constant. Also worth checking whether mockgen's interruption model is simply too clean — it never generates a bounce, so real capture may not be this flat.
+
+This is Sophie Leroy's attention residue; the term is accurate, not just evocative borrowing. Do not cite research in the UI and do not make claims about cognition — describe the measurement only. This is a direct application of hard rule 4 (no clinical language): Residue is the feature most tempted to drift into "this is bad for your brain" framing, and it must not.
 
 **Core** — the share of the active day that held together. One percentage, plus a 30-day trend line. Headline: "38% core." Definition: active seconds inside `focus` blocks ≥ 25 minutes, over total active seconds. The 25-minute threshold is tunable and must be visible in the UI. Status: implemented and tested, `engine.features.core.core()` (2026-08-06). Needs one sentence of explanation on first sight, same as Bedrock.
 
@@ -390,6 +415,9 @@ Do not reopen without a written reason.
 | Residue = elapsed time from first return to final settle, confirmed directly, not a flat 3:00 | A flat model couldn't produce the spec's own "14 minutes of residue" example; bouncing (return, distracted again, return again) before finally settling is what makes that number real |
 | Cross-focus-app switches (e.g. Code.exe → WindowsTerminal.exe) continue the same block | A block's identity is category, not app — the alternative would fragment ordinary editor/terminal workflows and understate Fragments/Core |
 | `blocks` table added to §5's Tier 2 schema (2026-08-06) | Bedrock's 14-day sparkline and Core's 30-day trend both need block-level data to outlive the 30-day raw-event TTL (rule 6) |
+| Local dashboard at `/dashboard` (2026-08-06), fed by `python -m engine.export` | Five features were marketed and then implemented with nobody ever having *looked* at their output. Rendering it immediately surfaced two problems no test caught: Residue is a constant, and `IDLE_GAP` swings Core from 7% to 86%. Route-grouped under `app/(marketing)` and `app/dashboard` so the two have separate chrome |
+| Threshold sliders read precomputed engine sweeps rather than recomputing in TypeScript | AGENTS.md §8 requires thresholds be tunable in the UI, but a TS reimplementation of Core/Fragments would be a second source of truth that could silently disagree with Python. Sweeping in `engine/export.py` keeps one implementation; the cost is discrete slider steps |
+| Dark theme added (2026-08-06) with `--on-lime` as a fixed dark token | Lime is a bright accent in *both* themes, so text on it must never follow `--ink`. The first pass used `text-ink` and produced 1.24:1 white-on-lime badges in dark mode. Any `bg-lime` carrying text pairs with `--on-lime`; borders and offset shadows use `--border`/`--shadow-*`, never raw `--ink` |
 
 ---
 

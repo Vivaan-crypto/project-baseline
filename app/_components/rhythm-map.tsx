@@ -11,7 +11,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
  *
  *   import Image from "next/image";
  *   import rhythmMap from "@/app/_assets/rhythm-map.png";
- *   <Image src={rhythmMap} alt="…" className="border-[3px] border-ink" placeholder="blur" />
+ *   <Image src={rhythmMap} alt="…" className="border-[3px] border-border" placeholder="blur" />
  *
  * A static import gives next/image the intrinsic dimensions, so no manual
  * width/height and no layout shift. Delete this whole component with it.
@@ -31,7 +31,7 @@ const HEAT_VARS = [
 
 export function RhythmMap() {
   return (
-    <figure className="border-[3px] border-ink bg-white p-4 shadow-[8px_8px_0_0_var(--ink)] sm:p-6">
+    <figure className="border-[3px] border-border bg-white p-4 shadow-[var(--shadow-lg)] sm:p-6">
       <div
         className="overflow-x-auto"
         role="img"
@@ -75,7 +75,7 @@ export function RhythmMap() {
       </div>
 
       <figcaption className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
-        <span className="border-[3px] border-ink px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
+        <span className="border-[3px] border-border px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
           Illustrative — not captured data
         </span>
         <span className="flex items-center gap-1.5 font-mono">

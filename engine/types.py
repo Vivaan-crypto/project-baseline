@@ -63,6 +63,19 @@ class ResidueMeasurement:
     settled: bool
     residue_secs: float | None
     # None when settled=False. Capped at RESIDUE_CAP_MINUTES*60 when settled.
+    churn_secs: float | None = None
+    # Time between returning and the START of the block that finally stuck —
+    # residue_secs minus the mandatory settle window, floored at 0.
+    #
+    # Why this exists: residue_secs has a hard floor of SETTLE_MINUTES,
+    # because "settled" is defined as having sustained that long. Anyone who
+    # returns and simply gets back to work scores exactly the floor, so on
+    # real data residue_secs is very often a constant (measured: 160/160
+    # settled interruptions came to exactly 180.0s on the 30-day mock set).
+    # churn_secs is the part that actually varies — 0 for a clean return,
+    # positive only when they bounced before holding. Report both; they
+    # answer different questions and only one of them carries information
+    # on a typical day.
 
 
 @dataclass

@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "mock": "python mock/mockgen.py --out mock/mock_events.db",
+    "data": "python -m engine.export",
+    "test:engine": "python -m pytest tests/engine -q",
+    "typecheck:engine": "python -m mypy engine"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

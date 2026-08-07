@@ -28,6 +28,15 @@
      not red. Red means destructive/error; an absence here is a feature. */
   --negative: var(--muted);
 
+  /*
+   * Text sitting ON a lime fill. Fixed dark in BOTH themes and deliberately
+   * not an alias of --ink: lime is a bright accent in light and dark alike,
+   * so its foreground must not flip with the theme. Using --ink here made
+   * every lime badge white-on-lime in dark mode — 1.24:1, invisible.
+   * Any time `bg-lime` carries text, pair it with this.
+   */
+  --on-lime: #111111;
+
   /* Hard-shadow system: offset only, never blurred. */
   --border-w: 3px;
   --shadow-sm: 5px 5px 0 0 var(--ink);
@@ -52,6 +61,66 @@
   --dur-reveal: 120ms;
   --dur-pulse: 1400ms;
   --dur-caret: 1100ms;
+
+  /* Category colours — used by Trace and Activity to distinguish the four
+     block categories. Deliberately NOT the signal palette: lime and cobalt
+     already mean "action" and "data/links", and reusing them here would
+     make a comms block look like a button. These are neutral-to-warm hues
+     that carry no interaction meaning. */
+  --cat-focus: #3d6b12;
+  --cat-mixed: #9a7b1f;
+  --cat-comms: #a8442a;
+  --cat-background: #7d7869;
+  --cat-away: transparent;
+}
+
+/*
+ * Dark theme. Not an inversion — the brand system is built on hard black
+ * borders and offset black shadows, and mechanically flipping those to
+ * white produces glowing outlines that read as neon, not as the same brand
+ * after dark. Instead: near-black paper, a slightly lifted card surface so
+ * cards separate from the page without a blur, and borders/shadows that
+ * stay DARKER than the surfaces they sit on, preserving the "cut out of
+ * card stock" feel that makes the light theme work.
+ *
+ * Signal colours are nudged, not swapped: lime and cobalt are both dark-on-
+ * light in the kit, so at full saturation on near-black they vibrate. Lime
+ * desaturates slightly and cobalt lightens to clear AA on the dark surface.
+ */
+:root[data-theme="dark"] {
+  --ink: #f2efe6;
+  --paper: #12110f;
+  --white: #1c1a17;
+
+  --lime: #c2e63a;
+  --cobalt: #7d92ff;
+  --red: #ff6a4d;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--white);
+  --muted: #9b968a;
+  --border: #3a372f;
+  --negative: var(--muted);
+
+  /* Offset shadows go pure black on dark — the card is lifted above the
+     page, so its shadow should read as absence of light, not as a stroke. */
+  --shadow-sm: 5px 5px 0 0 #000000;
+  --shadow-lg: 8px 8px 0 0 #000000;
+
+  /* Heat ramp re-derived for a dark ground: still single-hue lime, still
+     monotonic, but running dark-to-bright instead of light-to-dark so that
+     "more" is still the visually heavier end against near-black. */
+  --heat-0: #1c1a17;
+  --heat-1: #2f4114;
+  --heat-2: #4c6b1d;
+  --heat-3: #7ba52c;
+  --heat-4: #c2e63a;
+
+  --cat-focus: #8fce3e;
+  --cat-mixed: #d9b03f;
+  --cat-comms: #ff8163;
+  --cat-background: #6f6a5d;
 }
 
 @theme inline {
@@ -67,9 +136,22 @@
   --color-cobalt: var(--cobalt);
   --color-red: var(--red);
   --color-negative: var(--negative);
+  --color-on-lime: var(--on-lime);
+  --color-cat-focus: var(--cat-focus);
+  --color-cat-mixed: var(--cat-mixed);
+  --color-cat-comms: var(--cat-comms);
+  --color-cat-background: var(--cat-background);
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 }
+
+/*
+ * Theme switching is deliberately instant — no cross-fade. A fade would
+ * leave cards, borders and offset shadows mid-transition against a
+ * half-changed page, and the brand's whole premise is hard edges with no
+ * blur. Snapping is the honest expression of that; it also sidesteps
+ * transitioning hundreds of elements at once.
+ */
 
 /* No rounded corners, no blurred shadows, anywhere — brand kit §01 "DON'T". */
 * {

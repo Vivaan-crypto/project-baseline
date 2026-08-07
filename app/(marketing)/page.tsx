@@ -95,7 +95,7 @@ function SectionHeading({
 
 function FreeBadge() {
   return (
-    <span className="shrink-0 border-[3px] border-ink bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
+    <span className="shrink-0 border-[3px] border-on-lime bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-on-lime">
       Free forever
     </span>
   );
@@ -103,7 +103,7 @@ function FreeBadge() {
 
 function IncludedBadge() {
   return (
-    <span className="shrink-0 border-[3px] border-ink bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
+    <span className="shrink-0 border-[3px] border-on-lime bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-on-lime">
       Included
     </span>
   );
@@ -149,7 +149,7 @@ export default function Home() {
           {FREE_FEATURES.map((feature) => (
             <div
               key={feature.name}
-              className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)]"
+              className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold">{feature.name}</h3>
@@ -168,7 +168,7 @@ export default function Home() {
         <SectionHeading eyebrow="The one thing nothing else does">
           Fragments
         </SectionHeading>
-        <div className="border-[3px] border-ink bg-white p-8 shadow-[8px_8px_0_0_var(--ink)]">
+        <div className="border-[3px] border-border bg-white p-8 shadow-[var(--shadow-lg)]">
           <div className="flex items-baseline gap-3">
             <span className="font-sans text-5xl font-bold tabular-nums sm:text-6xl">
               11
@@ -197,7 +197,7 @@ export default function Home() {
           {PAID_FEATURES.map((feature) => (
             <div
               key={feature.name}
-              className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)]"
+              className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
             >
               <div className="mb-3 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-bold">{feature.name}</h3>
@@ -330,7 +330,7 @@ export default function Home() {
       {/* 8 — Honest status */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Status">Where this actually is</SectionHeading>
-        <div className="border-[3px] border-ink bg-white p-6 shadow-[8px_8px_0_0_var(--ink)] sm:p-7">
+        <div className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)] sm:p-7">
           <dl className="space-y-4 text-sm">
             <div className="sm:flex sm:gap-6">
               <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">

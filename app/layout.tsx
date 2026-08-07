@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Logo } from "@/app/_components/logo";
+import { THEME_INIT_SCRIPT } from "@/app/_components/theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -34,12 +34,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        {/*
+          Runs before first paint so the correct theme is already on <html>
+          when the page renders — otherwise a dark-theme user gets a flash of
+          the light background on every navigation. It has to be inline and
+          synchronous for that; a React effect runs far too late.
+
+          suppressHydrationWarning above is required and specific: this
+          script mutates <html> before React hydrates, so the server's markup
+          and the client's differ on that one attribute by design.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <header className="mx-auto w-full max-w-4xl px-6 pt-8 sm:px-8">
-          <Logo />
-        </header>
         {children}
         {/* Cookieless, no visitor identifiers, and a no-op in development. */}
         <Analytics />

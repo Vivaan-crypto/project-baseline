@@ -100,6 +100,7 @@ def residue(
                     return_ts=return_ts,
                     settled=False,
                     residue_secs=None,
+                    churn_secs=None,
                 )
             )
             continue
@@ -112,6 +113,10 @@ def residue(
                 return_ts=return_ts,
                 settled=True,
                 residue_secs=min(raw_secs, residue_cap_minutes * 60),
+                # Bounded below at 0: the settled block can be the returning
+                # block itself, in which case its start IS return_ts and
+                # there was no churn at all.
+                churn_secs=max(0.0, settled_block.start - return_ts),
             )
         )
 

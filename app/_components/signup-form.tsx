@@ -35,7 +35,7 @@ export function SignupForm({ location }: { location: string }) {
   if (state.status === "success") {
     return (
       <div
-        className="border-[3px] border-ink bg-lime px-4 py-3 font-mono text-sm font-bold text-ink sm:max-w-md"
+        className="border-[3px] border-on-lime bg-lime px-4 py-3 font-mono text-sm font-bold text-on-lime sm:max-w-md"
         role="status"
       >
         {state.message}
@@ -56,7 +56,7 @@ export function SignupForm({ location }: { location: string }) {
           autoComplete="email"
           required
           placeholder="you@example.com"
-          className="min-w-0 flex-1 border-[3px] border-ink bg-white px-3.5 py-3 font-mono text-sm text-ink outline-none placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+          className="min-w-0 flex-1 border-[3px] border-border bg-white px-3.5 py-3 font-mono text-sm text-ink outline-none placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
         />
 
         {/* Honeypot. Hidden from sight and from assistive tech; only automated
@@ -76,7 +76,7 @@ export function SignupForm({ location }: { location: string }) {
           // Records intent before validation runs, so a click still counts when
           // the address is malformed or the field is empty.
           onClick={() => track("beta_signup_click", { location })}
-          className="press shrink-0 border-[3px] border-ink bg-lime px-6 py-3.5 font-sans text-base font-bold text-ink shadow-[5px_5px_0_0_var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:opacity-60 disabled:shadow-none"
+          className="press shrink-0 border-[3px] border-on-lime bg-lime px-6 py-3.5 font-sans text-base font-bold text-on-lime shadow-[var(--shadow-sm)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:opacity-60 disabled:shadow-none"
         >
           {pending ? "Adding…" : "Join the beta list"}
         </button>

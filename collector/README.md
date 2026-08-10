@@ -37,10 +37,28 @@ data is personal and must never be near a git working tree). Ctrl+C to stop.
 
 ## Seeing your own numbers
 
+Two terminals. Capture is deliberately separate from the dashboard, so
+starting a dev server never starts recording your keystrokes as a side
+effect.
+
+```bash
+npm run collect
+```
+
+```bash
+npm run dev:live
+```
+
+`dev:live` runs the dev server alongside `engine.watch`, which re-exports
+every two minutes. The dashboard imports that JSON, and the dev server
+hot-reloads when it changes, so `/dashboard` updates on its own while you
+work. No refresh, no re-running anything.
+
+If you would rather do it by hand:
+
 ```bash
 python -m collector status                                   # what's captured so far
 python -m engine.export --db ~/.baseline/events.db --source real
-npm run dev                                                  # then open /dashboard
 ```
 
 `--source real` drops the "Simulated data" badge. Nothing else changes:
@@ -50,6 +68,14 @@ needed no modification to go from synthetic to real.
 
 Give it a full day before the numbers mean much, and 14 days before any
 baseline comparison does (AGENTS.md §4).
+
+### Your data never becomes a commit
+
+`app/_data/dashboard.json` is gitignored. It holds every app you used and
+the clock time of every block you worked, so it must not end up in a repo.
+The tracked file is `dashboard.sample.json`, the synthetic one, and
+`scripts/seed-dashboard-data.mjs` copies it into place on a fresh clone so
+the build still works before you have captured anything.
 
 ## Flags worth knowing
 

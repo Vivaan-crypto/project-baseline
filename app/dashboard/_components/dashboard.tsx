@@ -29,12 +29,28 @@ import { Verdict } from "./verdict";
 export function Dashboard() {
   const [selected, setSelected] = useState(DATA.days.length - 1);
 
+  // Day one for a real user, and the first thing they'll ever see here.
+  // It used to say "generate one with engine.export", which is the wrong
+  // advice: exporting an empty database just produces another empty file.
+  // What they actually need is to start capturing.
   if (DATA.days.length === 0) {
     return (
-      <p className="border-[3px] border-border bg-card p-6 text-sm">
-        No days in the snapshot. Generate one with{" "}
-        <code className="font-mono">python -m engine.export</code>.
-      </p>
+      <section className="border-[3px] border-border bg-card px-6 py-10 shadow-[var(--shadow-lg)] sm:px-10">
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Nothing here yet.
+        </h2>
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted">
+          Baseline has not seen you work yet. Start the collector and this
+          fills in on its own.
+        </p>
+        <pre className="mt-6 overflow-x-auto border-[3px] border-border bg-background p-4 font-mono text-[13px]">
+          npm run collect
+        </pre>
+        <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-muted">
+          Give it an hour before the numbers say much, and a couple of weeks
+          before they can tell you what is normal for you.
+        </p>
+      </section>
     );
   }
 

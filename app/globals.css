@@ -37,6 +37,14 @@
    */
   --on-lime: #111111;
 
+  /* Range track: --track is the unfilled half, --track-line its outline.
+     Two jobs that fight each other. The outline has to separate the whole
+     control from the card, while the unfilled half has to stay far enough
+     from the cobalt fill to tell filled from empty. One colour cannot do
+     both, so the outline is the strong one and the fill sits behind it. */
+  --track: var(--background);
+  --track-line: var(--border);
+
   /* Hard-shadow system: offset only, never blurred. */
   --border-w: 3px;
   --shadow-sm: 5px 5px 0 0 var(--ink);
@@ -117,6 +125,13 @@
   --heat-3: #7ba52c;
   --heat-4: #c2e63a;
 
+  /* A mid grey here would read against the card but collapse to 2:1 against
+     the cobalt fill, so filled and empty stopped being tellable apart. The
+     unfilled half stays dark for fill contrast and --track-line does the
+     separating instead, since --border alone is only 1.5:1 on this card. */
+  --track: #3a372f;
+  --track-line: var(--muted);
+
   --cat-focus: #8fce3e;
   --cat-mixed: #d9b03f;
   --cat-comms: #ff8163;
@@ -188,6 +203,69 @@ body {
 .press:active {
   transform: translate(5px, 5px);
   box-shadow: none;
+}
+
+/*
+ * Range slider. Native controls are nearly unstyleable and the default is
+ * a thin grey hairline that doesn't read as draggable at all.
+ *
+ * The track is filled to the left of the thumb via a hard-stop gradient
+ * driven by --pct, which the component sets inline. Hard stop, not a
+ * transition, so the fill has the same crisp edge as everything else here.
+ *
+ * The thumb is deliberately taller than the track and square (the global
+ * radius reset doesn't reach pseudo-elements, so it's zeroed explicitly).
+ * It should look like a physical block you can grab.
+ */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  border: var(--border-w) solid var(--track-line);
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    var(--cobalt) 0,
+    var(--cobalt) var(--pct),
+    var(--track) var(--pct),
+    var(--track) 100%
+  );
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 30px;
+  border-radius: 0;
+  background: var(--ink);
+  border: var(--border-w) solid var(--border);
+  cursor: grab;
+}
+.range:active::-webkit-slider-thumb {
+  cursor: grabbing;
+}
+
+.range::-moz-range-thumb {
+  width: 20px;
+  height: 30px;
+  border-radius: 0;
+  background: var(--ink);
+  border: var(--border-w) solid var(--border);
+  cursor: grab;
+}
+
+/* Firefox paints its own track on top of the background, so blank it out
+   and let the gradient above show through. */
+.range::-moz-range-track {
+  background: transparent;
+  height: 100%;
+}
+
+.range:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 3px;
 }
 
 /* Live-data pulse — everything else on the page stays perfectly still. */

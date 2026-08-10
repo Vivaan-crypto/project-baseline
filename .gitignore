@@ -48,3 +48,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Real dashboard exports. `python -m engine.export` writes dashboard.json,
+# and with --source real that file holds every app you used and the exact
+# clock time of every block you worked. It must never be committed.
+# dashboard.sample.json is the synthetic one, and that one IS tracked so a
+# fresh clone can build without capturing anything first.
+app/_data/dashboard.json

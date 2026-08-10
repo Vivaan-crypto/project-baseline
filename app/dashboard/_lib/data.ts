@@ -118,32 +118,42 @@ export const FEATURES = {
   fragments: {
     name: "Fragments",
     question: "How chopped up was the day?",
+    tier: "paid",
   },
   bedrock: {
     name: "Bedrock",
     question: "What was your best run?",
+    tier: "paid",
   },
   core: {
     name: "Core",
     question: "How much of it was solid?",
+    tier: "paid",
   },
   residue: {
     name: "Residue",
     question: "What did interruptions cost you?",
+    tier: "paid",
   },
   trace: {
     name: "Trace",
     question: "What did the day look like?",
+    tier: "free",
   },
   activity: {
     name: "Activity",
     question: "Where did the time go?",
+    tier: "free",
   },
   rhythm: {
     name: "Rhythm map",
     question: "When do you work best?",
+    tier: "paid",
   },
-} as const;
+} as const satisfies Record<
+  string,
+  { name: string; question: string; tier: "free" | "paid" }
+>;
 
 /**
  * The day in a sentence, plus how it stacks up against the reader's own

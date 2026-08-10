@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TierBadge } from "./ui";
 
 /**
  * Collapsed detail. Native details/summary rather than React state: works
@@ -8,11 +9,13 @@ import type { ReactNode } from "react";
 export function Disclosure({
   question,
   label,
+  tier,
   children,
   defaultOpen = false,
 }: {
   question: string;
   label: string;
+  tier?: "free" | "paid";
   children: ReactNode;
   defaultOpen?: boolean;
 }) {
@@ -31,12 +34,18 @@ export function Disclosure({
             {label}
           </span>
         </span>
-        <span
-          aria-hidden="true"
-          className="shrink-0 border-[3px] border-border px-2.5 py-1 font-mono text-sm font-bold leading-none"
-        >
-          <span className="group-open:hidden">+</span>
-          <span className="hidden group-open:inline">−</span>
+        {/* Badge sits left of the toggle rather than beside the feature
+            name, so the tags line up down the right edge and the whole list
+            can be scanned for what's free without reading any of it. */}
+        <span className="flex shrink-0 items-center gap-3">
+          {tier && <TierBadge tier={tier} />}
+          <span
+            aria-hidden="true"
+            className="border-[3px] border-border px-2.5 py-1 font-mono text-sm font-bold leading-none"
+          >
+            <span className="group-open:hidden">+</span>
+            <span className="hidden group-open:inline">−</span>
+          </span>
         </span>
       </summary>
       <div className="border-t-[3px] border-border">{children}</div>

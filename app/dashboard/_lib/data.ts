@@ -95,6 +95,11 @@ export interface Snapshot {
     idleGap: number[];
   };
   days: Day[];
+  /** Apps nobody has categorised. They count toward total active time but
+   *  toward none of the focus features, so these are the reason a real
+   *  user's Core can read far lower than reality. */
+  untagged: Array<{ name: string; secs: number }>;
+  untaggedShare: number;
   rhythm: { days: string[]; hours: number[]; grid: number[][] };
   sweeps: {
     coreMinutes: Record<string, Record<string, number | null>>;

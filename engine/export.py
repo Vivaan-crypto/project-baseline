@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from engine.blocks import blocks as build_blocks
-from engine.categorize import make_category_lookup
+from engine.categorize import make_category_lookup, untagged_processes
 from engine.config import (
     CORE_MINUTES,
     IDLE_GAP,
@@ -235,13 +235,31 @@ def _sweeps(
 
 def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
     keys_ts, mouse_ts, windows = read_events(db_path)
-    category_of = make_category_lookup()
+    # A mock export must not depend on whose machine it runs on, or the
+    # committed sample would differ per developer.
+    category_of = make_category_lookup(use_user_file=(source == "real"))
     tz = datetime.now().astimezone().tzinfo
     assert tz is not None  # astimezone() always attaches one
 
     all_blocks = build_blocks(keys_ts, mouse_ts, windows, category_of)
     grouped = group_blocks_by_day(all_blocks, tz)
     rhythm = rhythm_grid(all_blocks, tz=tz)
+
+    # Apps nobody has categorised. They count toward total active time but
+    # toward none of the focus features, so a user with an untagged main
+    # tool sees numbers far worse than reality. Exported so the dashboard
+    # can say so rather than quietly reporting them.
+    overall = activity(all_blocks, category_of)
+    by_secs = {e.name: e.secs for e in overall.by_process}
+    untagged = [
+        {"name": name, "secs": _round(by_secs[name])}
+        for name in untagged_processes(
+            [e.name for e in overall.by_process],
+            use_user_file=(source == "real"),
+        )
+        if name != "unknown"
+    ]
+    untagged_secs = sum(float(u["secs"] or 0) for u in untagged)
 
     return {
         "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -262,6 +280,13 @@ def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
             _day_payload(date, grouped[date], grouped, category_of, tz)
             for date in sorted(grouped)
         ],
+        "untagged": untagged,
+        "untaggedShare": _round(
+            untagged_secs / overall.total_active_secs
+            if overall.total_active_secs > 0
+            else 0.0,
+            4,
+        ),
         "rhythm": {
             "days": rhythm.days,
             "hours": rhythm.hours,

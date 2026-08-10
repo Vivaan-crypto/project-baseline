@@ -1,4 +1,5 @@
 import {
+  FEATURES,
   FRAGMENT_BUCKETS,
   fmtDuration,
   type Day,
@@ -13,27 +14,25 @@ import { Card, CardHead, NoData } from "./ui";
  * visual point of the chart — a day whose blocks are all in the left two
  * columns is shattered, and no total-focus-time number would show it.
  */
-export function Fragments({ day }: { day: Day }) {
+export function Fragments({ day, bare = false }: { day: Day; bare?: boolean }) {
   const counts = FRAGMENT_BUCKETS.map((b) => day.fragments.histogram[b] ?? 0);
   const max = Math.max(...counts, 1);
   const shortCount = counts[0] + counts[1];
 
+  // `bare` drops the card frame and header for use inside a <Disclosure>,
+  // which supplies both. Standalone rendering is unchanged.
+  const Frame = bare ? Bare : Framed;
+
   if (day.fragments.count === 0) {
     return (
-      <Card>
-        <CardHead label="Fragments" tier="paid" />
+      <Frame>
         <NoData>No focus blocks on this day.</NoData>
-      </Card>
+      </Frame>
     );
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHead
-        label="Fragments"
-        tier="paid"
-        hint="How focus time arrived. Every tracker reports the total; none of them tell you whether it came in chunks or shards."
-      />
+    <Frame>
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-1 items-end gap-2" style={{ minHeight: "9rem" }}>
           {FRAGMENT_BUCKETS.map((bucket, i) => {
@@ -71,6 +70,23 @@ export function Fragments({ day }: { day: Day }) {
             : "None under 15 minutes."}
         </p>
       </div>
+    </Frame>
+  );
+}
+
+function Bare({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col">{children}</div>;
+}
+
+function Framed({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="flex flex-col">
+      <CardHead
+        label={FEATURES.fragments.name}
+        tier="paid"
+        hint={FEATURES.fragments.question}
+      />
+      {children}
     </Card>
   );
 }

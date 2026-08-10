@@ -36,13 +36,20 @@ const METRICS: Array<{ key: Metric; label: string; fmt: (v: number) => string }>
   { key: "activeSecs", label: "Active", fmt: (v) => fmtDuration(v) },
 ];
 
-export function Thresholds({ date }: { date: string }) {
-  return (
-    <Card>
-      <CardHead
-        label="Thresholds"
-        hint="Every number below is recomputed by the engine at each value — not approximated in the browser. Drag to see how much each definition is doing."
-      />
+export function Thresholds({
+  date,
+  bare = false,
+}: {
+  date: string;
+  bare?: boolean;
+}) {
+  const body = (
+    <>
+      <p className="border-b-[3px] border-border px-4 py-3 text-[12px] leading-snug text-muted">
+        Every number here is recomputed by the engine at each value, not
+        approximated in the browser. Drag to see how much each definition is
+        doing.
+      </p>
       <div className="divide-y-[3px] divide-border">
         <RebuildSlider
           name="Idle gap"
@@ -64,6 +71,15 @@ export function Thresholds({ date }: { date: string }) {
         />
         <CoreSlider date={date} />
       </div>
+    </>
+  );
+
+  if (bare) return body;
+
+  return (
+    <Card>
+      <CardHead label="Tuning" />
+      {body}
     </Card>
   );
 }

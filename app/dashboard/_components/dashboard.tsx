@@ -56,6 +56,7 @@ export function Dashboard() {
           <Disclosure
             question={FEATURES.fragments.question}
             label={FEATURES.fragments.name}
+            tier={FEATURES.fragments.tier}
           >
             <Fragments day={day} bare />
           </Disclosure>
@@ -63,6 +64,7 @@ export function Dashboard() {
           <Disclosure
             question={FEATURES.activity.question}
             label={FEATURES.activity.name}
+            tier={FEATURES.activity.tier}
           >
             <Activity day={day} bare />
           </Disclosure>
@@ -70,6 +72,7 @@ export function Dashboard() {
           <Disclosure
             question={FEATURES.bedrock.question}
             label={FEATURES.bedrock.name}
+            tier={FEATURES.bedrock.tier}
           >
             <Bedrock day={day} bare />
           </Disclosure>
@@ -77,6 +80,7 @@ export function Dashboard() {
           <Disclosure
             question={FEATURES.residue.question}
             label={FEATURES.residue.name}
+            tier={FEATURES.residue.tier}
           >
             <Residue day={day} bare />
           </Disclosure>
@@ -84,6 +88,7 @@ export function Dashboard() {
           <Disclosure
             question={FEATURES.rhythm.question}
             label={FEATURES.rhythm.name}
+            tier={FEATURES.rhythm.tier}
           >
             <Rhythm
               rhythm={DATA.rhythm}

@@ -51,8 +51,14 @@ export function CardHead({
 export function TierBadge({ tier }: { tier: "paid" | "free" }) {
   return (
     <span
-      className={`border-2 border-border px-1.5 py-px font-mono text-[9px] font-bold uppercase tracking-wide ${
-        tier === "free" ? "bg-lime text-on-lime" : "text-muted"
+      // Free is filled lime so it reads as the thing you already have; paid
+      // is a plain outline rather than a warning colour, because it is a
+      // category, not a problem. Lime keeps --on-lime for its text since it
+      // stays a bright accent in both themes.
+      className={`shrink-0 border-2 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.1em] ${
+        tier === "free"
+          ? "border-on-lime bg-lime text-on-lime"
+          : "border-border text-muted"
       }`}
     >
       {tier === "free" ? "Free" : "Paid"}

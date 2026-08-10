@@ -24,6 +24,18 @@ import { Card, CardHead } from "./ui";
  * instead of moving continuously, which is the right trade.
  */
 
+/**
+ * How much of the track sits left of the thumb. Read by the .range rules in
+ * globals.css as a hard gradient stop.
+ *
+ * A single-value slider would divide by zero, so it pins to full instead:
+ * one option means the choice is already made.
+ */
+function fillStyle(index: number, count: number): React.CSSProperties {
+  const pct = count <= 1 ? 100 : (index / (count - 1)) * 100;
+  return { "--pct": `${pct}%` } as React.CSSProperties;
+}
+
 type Metric = keyof Pick<
   SweepRow,
   "fragmentsCount" | "bedrockMin" | "corePct" | "activeSecs"
@@ -124,11 +136,14 @@ function RebuildSlider({
         value={index}
         onChange={(e) => setIndex(Number(e.target.value))}
         aria-label={`${name}, currently ${value}${unit}`}
-        className="mt-3 w-full accent-[var(--cobalt)]"
+        className="range mt-5"
+        style={fillStyle(index, values.length)}
       />
-      <div className="flex justify-between font-mono text-[9px] text-muted">
-        {values.map((v) => (
-          <span key={v}>{v}</span>
+      <div className="mt-2 flex justify-between font-mono text-[11px] text-muted">
+        {values.map((v, i) => (
+          <span key={v} className={i === index ? "font-bold text-foreground" : ""}>
+            {v}
+          </span>
         ))}
       </div>
 
@@ -186,11 +201,14 @@ function CoreSlider({ date }: { date: string }) {
         value={index}
         onChange={(e) => setIndex(Number(e.target.value))}
         aria-label={`Core block length, currently ${value} minutes`}
-        className="mt-3 w-full accent-[var(--cobalt)]"
+        className="range mt-5"
+        style={fillStyle(index, values.length)}
       />
-      <div className="flex justify-between font-mono text-[9px] text-muted">
-        {values.map((v) => (
-          <span key={v}>{v}</span>
+      <div className="mt-2 flex justify-between font-mono text-[11px] text-muted">
+        {values.map((v, i) => (
+          <span key={v} className={i === index ? "font-bold text-foreground" : ""}>
+            {v}
+          </span>
         ))}
       </div>
 

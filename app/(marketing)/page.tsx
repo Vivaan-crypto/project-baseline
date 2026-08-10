@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
+import { TierDiagram } from "@/app/_components/tier-diagram";
 
 const FREE_FEATURES = [
   {
@@ -132,6 +133,16 @@ export default function Home() {
         <div className="mt-9">
           <SignupForm location="hero" />
         </div>
+      </section>
+
+      {/* 1a — What's free vs. what's paid, before any of the detail below.
+              It's the first thing anyone wants to know about a paid product,
+              and it was previously only inferable by reading four sections. */}
+      <section className="border-t border-border py-16 sm:py-20">
+        <SectionHeading eyebrow="What you get">
+          Two things free, five things paid
+        </SectionHeading>
+        <TierDiagram />
       </section>
 
       {/* 2 — Free forever */}

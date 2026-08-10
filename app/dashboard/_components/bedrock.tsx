@@ -1,4 +1,4 @@
-import { fmtClock, fmtDuration, type Day } from "@/app/dashboard/_lib/data";
+import { FEATURES, fmtClock, fmtDuration, type Day } from "@/app/dashboard/_lib/data";
 import { Card, CardHead, NoData } from "./ui";
 
 /**
@@ -9,17 +9,15 @@ import { Card, CardHead, NoData } from "./ui";
  * would silently compress a fortnight containing a week off into something
  * that looks continuous.
  */
-export function Bedrock({ day }: { day: Day }) {
+export function Bedrock({ day, bare = false }: { day: Day; bare?: boolean }) {
+  // `bare` drops the card frame and header for use inside a <Disclosure>,
+  // which supplies both. Standalone rendering is unchanged.
+  const Frame = bare ? Bare : Framed;
   const spark = day.bedrockSparkline;
   const max = Math.max(...spark, 1);
 
   return (
-    <Card className="flex flex-col">
-      <CardHead
-        label="Bedrock"
-        tier="paid"
-        hint="The solid layer under the day — your longest single unbroken stretch of focus."
-      />
+    <Frame>
 
       {day.bedrock ? (
         <div className="p-4">
@@ -67,6 +65,23 @@ export function Bedrock({ day }: { day: Day }) {
           different from a bedrock of zero.
         </NoData>
       )}
+    </Frame>
+  );
+}
+
+function Bare({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col">{children}</div>;
+}
+
+function Framed({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="flex flex-col">
+      <CardHead
+        label={FEATURES.bedrock.name}
+        tier="paid"
+        hint={FEATURES.bedrock.question}
+      />
+      {children}
     </Card>
   );
 }

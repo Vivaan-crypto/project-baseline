@@ -1,4 +1,5 @@
 import {
+  FEATURES,
   CATEGORY_COLOR,
   fmtDuration,
   type Category,
@@ -16,25 +17,22 @@ import { Card, CardHead, NoData } from "./ui";
  * are right for their own question, and the totals reconcile — the category
  * bar below sums to the same active time Core divides by.
  */
-export function Activity({ day }: { day: Day }) {
+export function Activity({ day, bare = false }: { day: Day; bare?: boolean }) {
+  // `bare` drops the card frame and header for use inside a <Disclosure>,
+  // which supplies both. Standalone rendering is unchanged.
+  const Frame = bare ? Bare : Framed;
   const { byProcess, byCategory } = day.activity;
 
   if (byProcess.length === 0) {
     return (
-      <Card>
-        <CardHead label="Activity" tier="free" />
+      <Frame>
         <NoData>No activity recorded on this day.</NoData>
-      </Card>
+      </Frame>
     );
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHead
-        label="Activity"
-        tier="free"
-        hint="Time by app. Counted per app, so a quick flick to a browser shows up here even where Fragments treats it as unbroken focus."
-      />
+    <Frame>
 
       <div className="p-4">
         {/* Category split as one continuous bar — the shape of the day in a
@@ -101,6 +99,23 @@ export function Activity({ day }: { day: Day }) {
           </p>
         )}
       </div>
+    </Frame>
+  );
+}
+
+function Bare({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col">{children}</div>;
+}
+
+function Framed({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="flex flex-col">
+      <CardHead
+        label={FEATURES.activity.name}
+        tier="free"
+        hint={FEATURES.activity.question}
+      />
+      {children}
     </Card>
   );
 }

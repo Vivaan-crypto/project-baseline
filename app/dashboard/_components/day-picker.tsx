@@ -54,9 +54,11 @@ export function DayPicker({
 
   return (
     <div className="border-[3px] border-border bg-card shadow-[var(--shadow-sm)]">
+      {/* The date lives in the verdict below, which is the page's headline.
+          Repeating it here made the same fact the first two things you read. */}
       <div className="flex items-baseline justify-between gap-3 border-b-[3px] border-border px-4 py-2">
-        <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
-          {fmtDate(days[selected].date)}
+        <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
+          Pick a day
         </h2>
         <span className="font-mono text-[10px] text-muted">
           ← → to move · {days.length} days

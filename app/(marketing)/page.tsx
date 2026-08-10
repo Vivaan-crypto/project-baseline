@@ -2,37 +2,48 @@ import type { ReactNode } from "react";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
 
+/*
+ * Every feature leads with the QUESTION it answers, not its name.
+ *
+ * Bedrock, Residue and Core are invented words — they mean nothing until
+ * someone teaches you, so a grid of them reads as a vocabulary test standing
+ * between the reader and the point. Leading with the question means nobody
+ * has to learn the word to understand what they're getting, and the word
+ * gets learned anyway by sitting next to its meaning. The dashboard uses the
+ * same framing (app/dashboard/_lib/data.ts, FEATURES).
+ */
 const FREE_FEATURES = [
   {
+    question: "Where did the time go?",
     name: "Activity",
-    description:
-      "Where your time actually went, broken down by app and by site.",
+    description: "Broken down by app and by site.",
   },
   {
+    question: "What did the day actually look like?",
     name: "Trace",
     description:
-      "A timeline of your day in blocks. What you were in, for how long, and where it broke.",
+      "A timeline in blocks — what you were in, for how long, and where it broke.",
   },
 ] as const;
 
 const PAID_FEATURES = [
   {
+    question: "What was your best stretch?",
     name: "Bedrock",
-    headline: "Bedrock: 12 minutes, 10:15–10:27, Code.exe.",
-    subtitle:
-      "Your single longest unbroken block of real focus that day — the solid layer under everything else.",
+    headline: "12 minutes, 10:15–10:27, Code.exe.",
+    subtitle: "Your longest unbroken block — the solid layer under the day.",
   },
   {
+    question: "What did the interruptions cost?",
     name: "Residue",
-    headline: "That standup left 14 minutes of residue.",
-    subtitle:
-      "After an interruption, how long it takes you to get back into a sustained block.",
+    headline: "That standup cost 14 minutes.",
+    subtitle: "How long it takes to get back into a sustained block.",
   },
   {
+    question: "How much of the day held together?",
     name: "Core",
     headline: "38% core.",
-    subtitle:
-      "The share of your active day that held together in blocks of 25 minutes or more.",
+    subtitle: "The share that came in blocks of 25 minutes or more.",
   },
 ] as const;
 
@@ -151,12 +162,17 @@ export default function Home() {
               key={feature.name}
               className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
             >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">{feature.name}</h3>
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <h3 className="text-lg font-bold leading-snug">
+                  {feature.question}
+                </h3>
                 <FreeBadge />
               </div>
               <p className="text-sm leading-relaxed text-muted">
                 {feature.description}
+              </p>
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                {feature.name}
               </p>
             </div>
           ))}
@@ -199,8 +215,10 @@ export default function Home() {
               key={feature.name}
               className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
             >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">{feature.name}</h3>
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <h3 className="text-lg font-bold leading-snug">
+                  {feature.question}
+                </h3>
                 <IncludedBadge />
               </div>
               <p className="text-sm font-medium leading-relaxed">
@@ -208,6 +226,9 @@ export default function Home() {
               </p>
               <p className="mt-2 text-xs leading-relaxed text-muted">
                 {feature.subtitle}
+              </p>
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                {feature.name}
               </p>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { fmtClock, fmtDuration, type Day } from "@/app/dashboard/_lib/data";
+import { FEATURES, fmtClock, fmtDuration, type Day } from "@/app/dashboard/_lib/data";
 import { Card, CardHead, NoData } from "./ui";
 
 /**
@@ -20,29 +20,26 @@ import { Card, CardHead, NoData } from "./ui";
  * there. Showing it alone would look like a measurement while carrying no
  * information, so the panel states plainly when that is what happened.
  */
-export function Residue({ day }: { day: Day }) {
+export function Residue({ day, bare = false }: { day: Day; bare?: boolean }) {
+  // `bare` drops the card frame and header for use inside a <Disclosure>,
+  // which supplies both. Standalone rendering is unchanged.
+  const Frame = bare ? Bare : Framed;
   const { measurements, medianSecs, settledCount, unsettledCount, bouncedCount } =
     day.residue;
   const sources = Object.entries(day.residue.bySource).sort((a, b) => b[1] - a[1]);
 
   if (measurements.length === 0) {
     return (
-      <Card>
-        <CardHead label="Residue" tier="paid" />
+      <Frame>
         <NoData>
           No interruptions on this day — nothing left a mark to measure.
         </NoData>
-      </Card>
+      </Frame>
     );
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHead
-        label="Residue"
-        tier="paid"
-        hint="After being pulled away, how long until work actually resumed."
-      />
+    <Frame>
 
       <div className="p-4">
         <div className="grid grid-cols-2 gap-4">
@@ -130,6 +127,23 @@ export function Residue({ day }: { day: Day }) {
           ))}
         </ul>
       </div>
+    </Frame>
+  );
+}
+
+function Bare({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col">{children}</div>;
+}
+
+function Framed({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="flex flex-col">
+      <CardHead
+        label={FEATURES.residue.name}
+        tier="paid"
+        hint={FEATURES.residue.question}
+      />
+      {children}
     </Card>
   );
 }

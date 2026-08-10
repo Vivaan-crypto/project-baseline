@@ -105,6 +105,105 @@ export interface Snapshot {
 
 export const DATA = snapshot as unknown as Snapshot;
 
+/**
+ * Every feature, with the plain question it answers.
+ *
+ * The brand names are invented words — Bedrock, Residue, Core mean nothing
+ * until someone teaches you, and a screen full of them is a vocabulary test
+ * standing between the reader and their own data. So the question leads and
+ * the name follows as a label. Nobody has to learn the word to read the
+ * number, and the word gets learned anyway by sitting next to its meaning.
+ */
+export const FEATURES = {
+  fragments: {
+    name: "Fragments",
+    question: "Did focus arrive in one piece or ten?",
+    plain: "How broken up the day was",
+  },
+  bedrock: {
+    name: "Bedrock",
+    question: "What was your best stretch?",
+    plain: "Longest unbroken focus",
+  },
+  core: {
+    name: "Core",
+    question: "How much of the day held together?",
+    plain: "Share of time in long blocks",
+  },
+  residue: {
+    name: "Residue",
+    question: "What did the interruptions cost?",
+    plain: "Time to get going again",
+  },
+  trace: {
+    name: "Trace",
+    question: "What did the day actually look like?",
+    plain: "The day on a clock",
+  },
+  activity: {
+    name: "Activity",
+    question: "Where did the time go?",
+    plain: "Time by app",
+  },
+  rhythm: {
+    name: "Rhythm map",
+    question: "When are you usually at your best?",
+    plain: "Your pattern over weeks",
+  },
+} as const;
+
+/**
+ * The day in one plain sentence, plus how it compares to the reader's own
+ * median.
+ *
+ * Strictly descriptive. AGENTS.md hard rule 4 forbids clinical framing, and
+ * §8 requires describing the measurement and never what it implies about the
+ * person — so this says "more pieces than usual", never "a bad day". The
+ * reader is allowed to decide whether a fragmented Tuesday was a problem;
+ * plenty of them aren't.
+ */
+export function verdict(day: Day, all: Day[]): {
+  shape: string;
+  comparison: string;
+} {
+  const longest = day.fragments.longestMin;
+  const count = day.fragments.count;
+
+  if (count === 0) {
+    return {
+      shape: "No focus blocks recorded on this day.",
+      comparison:
+        day.activeSecs > 0
+          ? "There was activity, but none of it held together long enough to count."
+          : "Nothing was captured.",
+    };
+  }
+
+  const shape =
+    count === 1
+      ? `Focus held in a single stretch of ${fmtDuration(longest * 60)}.`
+      : `Focus came in ${count} pieces, the longest ${fmtDuration(longest * 60)}.`;
+
+  const medCount = median(all.map((d) => d.fragments.count));
+  if (medCount === null || all.length < 3) {
+    // Fewer than three days is not a baseline. Saying "typical for you" off
+    // two days would be inventing a norm that does not exist yet.
+    return { shape, comparison: "Not enough history yet to say if that is usual." };
+  }
+
+  const diff = count - medCount;
+  if (Math.abs(diff) <= 1) {
+    return { shape, comparison: `About typical — you usually see around ${Math.round(medCount)}.` };
+  }
+  return {
+    shape,
+    comparison:
+      diff > 0
+        ? `More broken up than usual — you normally see around ${Math.round(medCount)}.`
+        : `Less broken up than usual — you normally see around ${Math.round(medCount)}.`,
+  };
+}
+
 export const FRAGMENT_BUCKETS = [
   "<5m",
   "5-15m",

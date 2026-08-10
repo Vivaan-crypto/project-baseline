@@ -71,7 +71,8 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 baseline/                Next.js on Vercel — marketing + beta signup. Lives at
 │                         repo root: package.json, app/, next.config.ts, etc.
 ├── collector/           Python. Passive capture → local SQLite. AGPL, public.
-│                         NOT BUILT YET — nothing captures real events.
+│                         Built 2026-08-07. Writes to ~/.baseline/events.db,
+│                         deliberately outside the repo.
 ├── engine/              Python. Rollup, baseline computation, drift detection.
 │                         Built 2026-08-06. Pure functions + engine/export.py CLI.
 ├── tests/engine/        pytest, hand-built fixtures. 65 cases.
@@ -83,7 +84,11 @@ The marketing site is the repo root on purpose, not a `site/` subfolder — it w
 ### collector/
 Windows-first (`pynput` + Win32 via ctypes). macOS is ~15 lines different (`NSWorkspace.frontmostApplication` via pyobjc) but blocked on notarization and the Accessibility/Input Monitoring permission flow. Do not start macOS work without an explicit decision.
 
-Near-zero dependencies. This is the audited component — every dependency needs justification.
+Near-zero dependencies. This is the audited component — every dependency needs justification. **Built 2026-08-07.** One runtime dependency (`pynput`, for global hooks); window identity uses `ctypes` from the stdlib and needs nothing. See `collector/README.md`.
+
+**`collector/classify.py` is the privacy boundary and the most important file in the repo.** It is the only code that ever sees a keystroke: a key goes in, one of six literal strings comes out, and the key is never stored, logged, buffered or passed on. Hard rule 2 and the landing page's capture list both live or die here. `tests/collector/test_classify.py` mechanises the promise — it asserts over the entire printable ASCII range that no character survives classification, and that `'a'`, `'7'` and `'$'` are indistinguishable afterwards (otherwise key classes would leak the shape of a password). If a feature ever needs the actual key, the feature is designed wrong; change the feature, not this file.
+
+Capture writes exactly the schema `engine/db.py` reads, which is the whole reason going from synthetic to real data required no engine changes at all. Verified end-to-end: a real 20-second capture recorded the foreground app but produced **zero** blocks, because no keys or mouse events occurred — the "a `windows` row is not evidence a human is present" invariant (§5's known trap) holds on real data, not just fixtures.
 
 ### engine/
 Runs on-device. Trains per-user only. Personalized models substantially outperform one-size-fits-all for this signal, so per-user training is both the better approach and what makes the no-shared-data architecture viable.
@@ -317,7 +322,9 @@ These weren't addressed by the 2026-08-06 spec and aren't dropped — just not y
 ### Landing page state (2026-08-06)
 Main pitch: Fragments headlined, Bedrock/Residue/Core/Rhythm Map as the rest of the paid set, Activity and Trace stated explicitly as free forever (not just "free for now"). Rhythm Map ships ungated with "fills in as you go" labeling — no more "needs more history than a trial gives you" exclusion. No Architecture/data-flow diagram on the page; the Capture section already covers "data never leaves the device" without needing one.
 
-**Resolved (2026-08-06):** whether Bedrock/Residue/Core get advertised on the public landing page before they exist — yes, list all five as included/coming; that decision stood before the computation existed and stands now that it does. Separately, as of the same date, the computation itself is no longer "before they exist" — `engine/` implements and tests all five (see their Status lines above). What's still genuinely missing is `collector/`: no real Windows capture exists, so nothing here runs against a real user's actual keys/mouse/windows yet. Don't read "implemented" as "live for a real user" — those are different claims.
+**Resolved (2026-08-06):** whether Bedrock/Residue/Core get advertised on the public landing page before they exist — yes, list all five as included/coming; that decision stood before the computation existed and stands now that it does. Separately, as of the same date, the computation itself is no longer "before they exist" — `engine/` implements and tests all five (see their Status lines above).
+
+**Updated 2026-08-07:** `collector/` now exists too, so the pipeline runs end to end on real capture. The remaining gap is no longer "can it read real data" but "has anyone run it for long enough to learn anything" — nobody has yet accumulated the 14 days a baseline needs, and the two open findings below (Residue's constant, `IDLE_GAP`'s value) can only be settled by that. Don't read "implemented and captures real data" as "validated on real data"; those are still different claims.
 
 ---
 
@@ -418,6 +425,9 @@ Do not reopen without a written reason.
 | Local dashboard at `/dashboard` (2026-08-06), fed by `python -m engine.export` | Five features were marketed and then implemented with nobody ever having *looked* at their output. Rendering it immediately surfaced two problems no test caught: Residue is a constant, and `IDLE_GAP` swings Core from 7% to 86%. Route-grouped under `app/(marketing)` and `app/dashboard` so the two have separate chrome |
 | Threshold sliders read precomputed engine sweeps rather than recomputing in TypeScript | AGENTS.md §8 requires thresholds be tunable in the UI, but a TS reimplementation of Core/Fragments would be a second source of truth that could silently disagree with Python. Sweeping in `engine/export.py` keeps one implementation; the cost is discrete slider steps |
 | Dark theme added (2026-08-06) with `--on-lime` as a fixed dark token | Lime is a bright accent in *both* themes, so text on it must never follow `--ink`. The first pass used `text-ink` and produced 1.24:1 white-on-lime badges in dark mode. Any `bg-lime` carrying text pairs with `--on-lime`; borders and offset shadows use `--border`/`--shadow-*`, never raw `--ink` |
+| `collector/` built 2026-08-07; `classify.py` isolated as a standalone module with its own exhaustive test file | The key→class mapping is three lines of logic and could have been inlined into the listener callback. It is a separate audited module because it is the single point where hard rule 2 is kept or broken, and "the characters you type are never captured" should be verifiable by reading one short file rather than by trusting a callback buried in a capture loop |
+| Mouse *moves* throttled to 1/sec; clicks and scrolls never throttled | Moves fire hundreds of times a second and are only ever evidence that a human is present. Clicks and scrolls are discrete intentional acts whose timing carries information, so throttling them would destroy signal rather than noise |
+| Collector DB defaults to `~/.baseline/events.db`, outside the repo | `.gitignore` already excludes `*.db`, but keeping personal event data out of the working tree entirely is the stronger guarantee — an ignore rule is one `git add -f` from being wrong |
 
 ---
 

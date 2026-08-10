@@ -1,13 +1,9 @@
 import type { ReactNode } from "react";
 
 /**
- * Collapsed detail. Uses native <details>/<summary> rather than React state:
- * it works before hydration, it is keyboard and screen-reader accessible
- * without any ARIA, and browser find-in-page can open it to reveal a match.
- *
- * Nothing is deleted by collapsing — the dense panels are all still one
- * click away. The problem was never that the detail existed, it was that it
- * arrived at the same visual weight as the answer.
+ * Collapsed detail. Native details/summary rather than React state: works
+ * before hydration, keyboard and screen reader friendly with no ARIA, and
+ * find-in-page can open it to reveal a match.
  */
 export function Disclosure({
   question,
@@ -25,19 +21,19 @@ export function Disclosure({
       open={defaultOpen}
       className="group border-[3px] border-border bg-card shadow-[var(--shadow-sm)]"
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 hover:bg-background [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 hover:bg-background [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
-          {/* The question leads. The invented name is the small print. */}
-          <span className="block text-[15px] font-semibold leading-snug">
+          {/* The question is the title. The invented name is small print. */}
+          <span className="block text-xl font-bold leading-snug tracking-tight">
             {question}
           </span>
-          <span className="mt-0.5 block font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+          <span className="mt-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
             {label}
           </span>
         </span>
         <span
           aria-hidden="true"
-          className="shrink-0 border-2 border-border px-2 py-0.5 font-mono text-[11px] font-bold leading-none"
+          className="shrink-0 border-[3px] border-border px-2.5 py-1 font-mono text-sm font-bold leading-none"
         >
           <span className="group-open:hidden">+</span>
           <span className="hidden group-open:inline">−</span>

@@ -42,7 +42,7 @@ export function Rhythm({
   );
 
   const body = (
-    <div className="overflow-x-auto p-4">
+    <div className="overflow-x-auto p-6">
       <div className="min-w-[34rem]">
         <div className="flex">
           <div className="w-10 shrink-0" />

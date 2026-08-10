@@ -26,14 +26,14 @@ export function Fragments({ day, bare = false }: { day: Day; bare?: boolean }) {
   if (day.fragments.count === 0) {
     return (
       <Frame>
-        <NoData>No focus blocks on this day.</NoData>
+        <NoData>No focus blocks today.</NoData>
       </Frame>
     );
   }
 
   return (
     <Frame>
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-6">
         <div className="flex flex-1 items-end gap-2" style={{ minHeight: "9rem" }}>
           {FRAGMENT_BUCKETS.map((bucket, i) => {
             const count = counts[i];
@@ -84,7 +84,7 @@ function Framed({ children }: { children: React.ReactNode }) {
       <CardHead
         label={FEATURES.fragments.name}
         tier="paid"
-        hint={FEATURES.fragments.question}
+        hint="Other trackers give you a total. This shows whether it came in a few long runs or a lot of short ones."
       />
       {children}
     </Card>

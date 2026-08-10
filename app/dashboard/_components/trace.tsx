@@ -44,7 +44,7 @@ export function Trace({ day }: { day: Day }) {
     return (
       <Card>
         <CardHead label="Trace" tier="free" />
-        <NoData>No activity recorded on this day.</NoData>
+        <NoData>Nothing recorded for this day.</NoData>
       </Card>
     );
   }
@@ -54,11 +54,11 @@ export function Trace({ day }: { day: Day }) {
       <CardHead
         label="Trace"
         tier="free"
-        hint="Your day in blocks, on a real clock. Gaps are stretches with no input at all — not just a change of app."
+        hint="The hatched sections are when you were away from the machine, not just in a different app."
         right={<Legend />}
       />
 
-      <div className="p-4">
+      <div className="p-6">
         <div
           className="relative h-20 border-[3px] border-border bg-background"
           onMouseLeave={() => setHovered(null)}
@@ -115,13 +115,13 @@ export function Trace({ day }: { day: Day }) {
                 <span className="text-muted">{active.category}</span>
               )}
               {active.openEnded && (
-                <span className="text-muted">still open at end of data</span>
+                <span className="text-muted">still going when the data ends</span>
               )}
             </span>
           ) : (
             <span className="text-muted">
-              Hover a block for detail. {day.trace.filter((e) => e.kind === "block").length} blocks,{" "}
-              {day.trace.filter((e) => e.kind === "away").length} breaks.
+              {day.trace.filter((e) => e.kind === "block").length} blocks and{" "}
+              {day.trace.filter((e) => e.kind === "away").length} breaks. Hover one to see what it was.
             </span>
           )}
         </div>

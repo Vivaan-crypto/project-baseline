@@ -32,7 +32,7 @@ export function Residue({ day, bare = false }: { day: Day; bare?: boolean }) {
     return (
       <Frame>
         <NoData>
-          No interruptions on this day — nothing left a mark to measure.
+          Nothing interrupted you today.
         </NoData>
       </Frame>
     );
@@ -41,21 +41,21 @@ export function Residue({ day, bare = false }: { day: Day; bare?: boolean }) {
   return (
     <Frame>
 
-      <div className="p-4">
+      <div className="p-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-[14px] font-bold">
               Median
             </p>
-            <p className="mt-1 font-mono text-3xl font-bold tabular-nums">
+            <p className="mt-2 font-mono text-4xl font-bold tabular-nums">
               {fmtDuration(medianSecs)}
             </p>
           </div>
           <div>
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-[14px] font-bold">
               Bounced returns
             </p>
-            <p className="mt-1 font-mono text-3xl font-bold tabular-nums">
+            <p className="mt-2 font-mono text-4xl font-bold tabular-nums">
               {bouncedCount}
               <span className="text-base font-normal text-muted">
                 /{settledCount}
@@ -66,24 +66,23 @@ export function Residue({ day, bare = false }: { day: Day; bare?: boolean }) {
 
         {bouncedCount === 0 && settledCount > 0 && (
           <p className="mt-3 border-[3px] border-border bg-background p-3 text-[12px] leading-snug text-muted">
-            Every return on this day was clean — back to the same app and
-            straight into a sustained block. That makes the median exactly the
-            settle window, which is the floor of this measurement rather than
-            a reading taken from it.
+            Every time you came back today, you got straight into it. So this
+            number is really just the 3 minute minimum the measurement uses,
+            not something it found.
           </p>
         )}
 
         {unsettledCount > 0 && (
           <p className="mt-3 text-[12px] leading-snug text-muted">
             {unsettledCount} interruption{unsettledCount === 1 ? "" : "s"} never
-            settled and {unsettledCount === 1 ? "is" : "are"} excluded from the
-            median entirely — not counted as zero.
+            settled, so {unsettledCount === 1 ? "it is" : "they are"} left out of the median.
+            They are not counted as zero.
           </p>
         )}
 
         {sources.length > 0 && (
           <div className="mt-4 border-t-[3px] border-border pt-3">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-[14px] font-bold">
               By source
             </p>
             <ul className="mt-2 space-y-1">
@@ -141,7 +140,7 @@ function Framed({ children }: { children: React.ReactNode }) {
       <CardHead
         label={FEATURES.residue.name}
         tier="paid"
-        hint={FEATURES.residue.question}
+        hint="After something pulls you away, how long before you are properly back into it."
       />
       {children}
     </Card>

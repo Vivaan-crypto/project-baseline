@@ -20,17 +20,17 @@ export function Bedrock({ day, bare = false }: { day: Day; bare?: boolean }) {
     <Frame>
 
       {day.bedrock ? (
-        <div className="p-4">
+        <div className="p-6">
           <p className="font-mono text-4xl font-bold leading-none tabular-nums">
             {fmtDuration(day.bedrock.durationSecs)}
           </p>
           <p className="mt-2 font-mono text-[12px] text-muted">
-            {fmtClock(day.bedrock.startMin)}–{fmtClock(day.bedrock.endMin)} ·{" "}
+            {fmtClock(day.bedrock.startMin)} to {fmtClock(day.bedrock.endMin)} in{" "}
             {day.bedrock.topProcess}
           </p>
 
           <div className="mt-4 border-t-[3px] border-border pt-3">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wide text-muted">
+            <p className="text-[14px] font-bold">
               Last 14 days
             </p>
             <div className="mt-2 flex h-16 items-end gap-1">
@@ -40,7 +40,7 @@ export function Bedrock({ day, bare = false }: { day: Day; bare?: boolean }) {
                   <div
                     key={i}
                     title={
-                      secs > 0 ? fmtDuration(secs) : "No focus block that day"
+                      secs > 0 ? fmtDuration(secs) : "No focus that day"
                     }
                     className="flex-1 border-2 border-border"
                     style={{
@@ -55,14 +55,14 @@ export function Bedrock({ day, bare = false }: { day: Day; bare?: boolean }) {
               })}
             </div>
             <p className="mt-2 font-mono text-[10px] text-muted">
-              Peak {fmtDuration(max)} · selected day highlighted
+              Best was {fmtDuration(max)}. Today is highlighted.
             </p>
           </div>
         </div>
       ) : (
         <NoData>
-          No focus block on this day, so there is no bedrock to report. That is
-          different from a bedrock of zero.
+          No focus blocks today, so there is nothing to measure. That is not the
+          same as a score of zero.
         </NoData>
       )}
     </Frame>
@@ -79,7 +79,7 @@ function Framed({ children }: { children: React.ReactNode }) {
       <CardHead
         label={FEATURES.bedrock.name}
         tier="paid"
-        hint={FEATURES.bedrock.question}
+        hint="Your longest run at something without breaking off."
       />
       {children}
     </Card>

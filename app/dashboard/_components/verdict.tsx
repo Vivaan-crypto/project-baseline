@@ -1,25 +1,18 @@
 import { fmtDate, verdict, type Day } from "@/app/dashboard/_lib/data";
 
-/**
- * The day, said out loud. The single largest thing on the page.
- *
- * Everything below this is evidence for it. The previous layout opened with
- * four equal-weight stat tiles and left the reader to synthesise a story out
- * of them, which is work the software should be doing — a dashboard that
- * only reports measurements has outsourced its actual job.
- */
+/** The day, said plainly. Biggest thing on the page. */
 export function Verdict({ day, all }: { day: Day; all: Day[] }) {
   const { shape, comparison } = verdict(day, all);
 
   return (
-    <section className="border-[3px] border-border bg-card px-5 py-6 shadow-[var(--shadow-lg)] sm:px-8 sm:py-8">
-      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+    <section className="border-[3px] border-border bg-card px-6 py-9 shadow-[var(--shadow-lg)] sm:px-10 sm:py-12">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-muted">
         {fmtDate(day.date)}
       </p>
-      <p className="mt-3 max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+      <p className="mt-5 max-w-3xl text-[26px] font-bold leading-[1.25] tracking-tight sm:text-[38px]">
         {shape}
       </p>
-      <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted">
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted">
         {comparison}
       </p>
     </section>

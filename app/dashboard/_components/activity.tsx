@@ -26,7 +26,7 @@ export function Activity({ day, bare = false }: { day: Day; bare?: boolean }) {
   if (byProcess.length === 0) {
     return (
       <Frame>
-        <NoData>No activity recorded on this day.</NoData>
+        <NoData>Nothing recorded for this day.</NoData>
       </Frame>
     );
   }
@@ -34,14 +34,14 @@ export function Activity({ day, bare = false }: { day: Day; bare?: boolean }) {
   return (
     <Frame>
 
-      <div className="p-4">
+      <div className="p-6">
         {/* Category split as one continuous bar — the shape of the day in a
             single line, before the per-app detail. */}
         <div className="flex h-6 w-full border-[3px] border-border">
           {byCategory.map((entry) => (
             <div
               key={entry.name}
-              title={`${entry.name} — ${fmtDuration(entry.secs)}`}
+              title={`${entry.name}, ${fmtDuration(entry.secs)}`}
               style={{
                 width: `${entry.share * 100}%`,
                 backgroundColor:
@@ -113,7 +113,7 @@ function Framed({ children }: { children: React.ReactNode }) {
       <CardHead
         label={FEATURES.activity.name}
         tier="free"
-        hint={FEATURES.activity.question}
+        hint="A quick peek at your browser shows up here, even though Fragments still counts that stretch as unbroken focus."
       />
       {children}
     </Card>

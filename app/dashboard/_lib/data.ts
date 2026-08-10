@@ -117,50 +117,42 @@ export const DATA = snapshot as unknown as Snapshot;
 export const FEATURES = {
   fragments: {
     name: "Fragments",
-    question: "Did focus arrive in one piece or ten?",
-    plain: "How broken up the day was",
+    question: "How chopped up was the day?",
   },
   bedrock: {
     name: "Bedrock",
-    question: "What was your best stretch?",
-    plain: "Longest unbroken focus",
+    question: "What was your best run?",
   },
   core: {
     name: "Core",
-    question: "How much of the day held together?",
-    plain: "Share of time in long blocks",
+    question: "How much of it was solid?",
   },
   residue: {
     name: "Residue",
-    question: "What did the interruptions cost?",
-    plain: "Time to get going again",
+    question: "What did interruptions cost you?",
   },
   trace: {
     name: "Trace",
-    question: "What did the day actually look like?",
-    plain: "The day on a clock",
+    question: "What did the day look like?",
   },
   activity: {
     name: "Activity",
     question: "Where did the time go?",
-    plain: "Time by app",
   },
   rhythm: {
     name: "Rhythm map",
-    question: "When are you usually at your best?",
-    plain: "Your pattern over weeks",
+    question: "When do you work best?",
   },
 } as const;
 
 /**
- * The day in one plain sentence, plus how it compares to the reader's own
+ * The day in a sentence, plus how it stacks up against the reader's own
  * median.
  *
- * Strictly descriptive. AGENTS.md hard rule 4 forbids clinical framing, and
- * §8 requires describing the measurement and never what it implies about the
- * person — so this says "more pieces than usual", never "a bad day". The
- * reader is allowed to decide whether a fragmented Tuesday was a problem;
- * plenty of them aren't.
+ * Descriptive only. Hard rule 4 rules out clinical framing and §8 says to
+ * describe the measurement, not what it says about the person. So: "choppier
+ * than usual", never "a bad day". A fragmented Tuesday is often fine and the
+ * reader gets to decide that for themselves.
  */
 export function verdict(day: Day, all: Day[]): {
   shape: string;
@@ -171,36 +163,37 @@ export function verdict(day: Day, all: Day[]): {
 
   if (count === 0) {
     return {
-      shape: "No focus blocks recorded on this day.",
+      shape: "Nothing held together long enough to count today.",
       comparison:
         day.activeSecs > 0
-          ? "There was activity, but none of it held together long enough to count."
+          ? "You were at the machine, but it never settled into a proper stretch."
           : "Nothing was captured.",
     };
   }
 
   const shape =
     count === 1
-      ? `Focus held in a single stretch of ${fmtDuration(longest * 60)}.`
-      : `Focus came in ${count} pieces, the longest ${fmtDuration(longest * 60)}.`;
+      ? `One clean run today, ${fmtDuration(longest * 60)} of it.`
+      : `You got ${count} runs at it today. The longest was ${fmtDuration(longest * 60)}.`;
 
   const medCount = median(all.map((d) => d.fragments.count));
   if (medCount === null || all.length < 3) {
-    // Fewer than three days is not a baseline. Saying "typical for you" off
-    // two days would be inventing a norm that does not exist yet.
-    return { shape, comparison: "Not enough history yet to say if that is usual." };
+    // Two days is not a baseline. Claiming "normal for you" off that would
+    // be inventing a norm that does not exist yet.
+    return { shape, comparison: "Too early to say whether that's normal for you." };
   }
 
+  const usual = Math.round(medCount);
   const diff = count - medCount;
   if (Math.abs(diff) <= 1) {
-    return { shape, comparison: `About typical — you usually see around ${Math.round(medCount)}.` };
+    return { shape, comparison: `Pretty normal for you. Usually it's about ${usual}.` };
   }
   return {
     shape,
     comparison:
       diff > 0
-        ? `More broken up than usual — you normally see around ${Math.round(medCount)}.`
-        : `Less broken up than usual — you normally see around ${Math.round(medCount)}.`,
+        ? `Choppier than usual. You normally land around ${usual}.`
+        : `Smoother than usual. You normally land around ${usual}.`,
   };
 }
 

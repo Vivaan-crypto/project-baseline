@@ -45,16 +45,15 @@ export function Thresholds({
 }) {
   const body = (
     <>
-      <p className="border-b-[3px] border-border px-4 py-3 text-[12px] leading-snug text-muted">
-        Every number here is recomputed by the engine at each value, not
-        approximated in the browser. Drag to see how much each definition is
-        doing.
+      <p className="border-b-[3px] border-border px-6 py-4 text-[14px] leading-relaxed text-muted">
+        These decide how the numbers above get worked out. Drag one and watch
+        how much it moves things.
       </p>
       <div className="divide-y-[3px] divide-border">
         <RebuildSlider
           name="Idle gap"
           unit="s"
-          description="No input for this long and you count as away, which ends the block. The one threshold the spec never assigned a value to — 300s is an unvalidated guess."
+          description="Go this long without touching anything and you count as away, which ends the block. Nobody ever picked a value for this one, so 300s is a guess."
           values={DATA.sweepValues.idleGap}
           defaultValue={DATA.config.idleGapSecs}
           sweep={DATA.sweeps.idleGap}
@@ -63,7 +62,7 @@ export function Thresholds({
         <RebuildSlider
           name="Switch tolerance"
           unit="s"
-          description="A flick to another app shorter than this is absorbed rather than breaking the block. Also the minimum length of something Residue will call an interruption."
+          description="Pop into another app for less than this and it does not break your block. Also the shortest thing Residue will treat as an interruption."
           values={DATA.sweepValues.switchTolerance}
           defaultValue={DATA.config.switchToleranceSecs}
           sweep={DATA.sweeps.switchTolerance}
@@ -108,7 +107,7 @@ function RebuildSlider({
   const row = sweep[String(value)]?.[date];
 
   return (
-    <div className="p-4">
+    <div className="p-6">
       <Head
         name={name}
         value={`${value}${unit}`}
@@ -152,7 +151,7 @@ function RebuildSlider({
         </div>
       ) : (
         <p className="mt-3 text-[12px] italic text-muted">
-          No activity on this day at this setting.
+          Nothing to show for this day at this setting.
         </p>
       )}
     </div>
@@ -170,13 +169,13 @@ function CoreSlider({ date }: { date: string }) {
   const pct = DATA.sweeps.coreMinutes[String(value)]?.[date] ?? null;
 
   return (
-    <div className="p-4">
+    <div className="p-6">
       <Head
         name="Core block length"
         value={`${value}m`}
         isDefault={value === DATA.config.coreMinutes}
         defaultLabel={`${DATA.config.coreMinutes}m`}
-        description="A focus block must reach this length to count toward Core. Only affects Core — blocks themselves are unchanged."
+        description="How long a run has to be before it counts as solid focus. This only moves the Core number, not the blocks themselves."
       />
 
       <input
@@ -223,9 +222,7 @@ function Head({
   return (
     <>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-mono text-[11px] font-bold uppercase tracking-wide">
-          {name}
-        </h3>
+        <h3 className="text-[17px] font-bold tracking-tight">{name}</h3>
         <span className="flex items-baseline gap-2">
           <span className="font-mono text-lg font-bold tabular-nums">{value}</span>
           {isDefault ? (
@@ -239,7 +236,7 @@ function Head({
           )}
         </span>
       </div>
-      <p className="mt-1 text-[12px] leading-snug text-muted">{description}</p>
+      <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-muted">{description}</p>
     </>
   );
 }

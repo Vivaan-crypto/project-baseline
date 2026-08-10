@@ -61,7 +61,7 @@ export function DayPicker({
           Pick a day
         </h2>
         <span className="font-mono text-[10px] text-muted">
-          ← → to move · {days.length} days
+          {days.length} days. Arrow keys move.
         </span>
       </div>
 
@@ -75,7 +75,7 @@ export function DayPicker({
               type="button"
               onClick={() => onSelect(index)}
               aria-current={isSelected ? "true" : undefined}
-              title={`${fmtDate(day.date)} — ${day.fragments.count} fragments`}
+              title={`${fmtDate(day.date)}, ${day.fragments.count} blocks`}
               className={`flex w-11 shrink-0 flex-col items-center gap-1 border-2 px-1 py-1.5 ${
                 isSelected
                   ? "border-border bg-lime text-on-lime"

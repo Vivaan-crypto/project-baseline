@@ -33,16 +33,16 @@ export function CardHead({
   right?: ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b-[3px] border-border px-4 py-3">
-      <div className="flex items-center gap-2">
-        <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
-          {label}
-        </h2>
+    <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b-[3px] border-border px-6 py-5">
+      <div className="flex items-center gap-2.5">
+        <h2 className="text-xl font-bold tracking-tight">{label}</h2>
         {tier && <TierBadge tier={tier} />}
       </div>
       {right}
       {hint && (
-        <p className="w-full text-[12px] leading-snug text-muted">{hint}</p>
+        <p className="w-full max-w-2xl text-[14px] leading-relaxed text-muted">
+          {hint}
+        </p>
       )}
     </header>
   );

@@ -136,14 +136,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 1a — What's free vs. what's paid */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Depth Over Duration">
-          Focus isn't total hours. It’s unbroken time.
-        </SectionHeading>
-        <TierDiagram />
-      </section>
-
       {/* 3 — Fragments, headlined */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="The Core Metric">
@@ -171,33 +163,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4 — Bedrock, Residue, Core */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Baseline Pro">
-          The metrics that hold your day together
-        </SectionHeading>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {PAID_FEATURES.map((feature) => (
-            <div
-              key={feature.name}
-              className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">{feature.name}</h3>
-                <IncludedBadge />
-              </div>
-              <p className="text-sm font-medium leading-relaxed">
-                {feature.headline}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted">
-                {feature.subtitle}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5 — What it sees vs. what it never sees */}
+      {/* 4 — What it sees vs. what it never sees */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Privacy By Design">
           Your data stays on your machine. Period.
@@ -247,7 +213,7 @@ export default function Home() {
         </p>
       </section>
 
-      {/* 6 — Why not a time tracker */}
+      {/* 5 — Why not a time tracker */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="The Difference">
           Built for focus, not just time tracking
@@ -288,7 +254,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7 — Rhythm Map */}
+      {/* 6 — Rhythm Map */}
       <section className="border-t border-border py-16 sm:py-20">
         <SectionHeading eyebrow="Baseline Pro">
           Discover when you actually sustain work
@@ -305,46 +271,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 8 — Honest status */}
+      {/* 1a — What's free vs. what's paid */}
       <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Status">Where we are right now</SectionHeading>
-        <div className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)] sm:p-7">
-          <dl className="space-y-4 text-sm">
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Stage
-              </dt>
-              <dd className="leading-relaxed">
-                v1.0 is live. Built from the ground up for performance and
-                privacy, Baseline is fully operational and ready to help you
-                reclaim your focus.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Day one
-              </dt>
-              <dd className="leading-relaxed">
-                Activity, Trace, and Fragments work seamlessly from your first
-                session. Bedrock, Residue, and Core lock in shortly after.
-                Rhythm Map begins building your profile instantly.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Pricing
-              </dt>
-              <dd className="leading-relaxed">
-                Activity and Trace: Free forever. Fragments, Bedrock, Residue,
-                Core, and Rhythm Map: Try them with a free 7-day trial. No
-                credit card required.
-              </dd>
-            </div>
-          </dl>
-        </div>
+        <SectionHeading eyebrow="Depth Over Duration">
+          Focus isn't total hours. It’s unbroken time.
+        </SectionHeading>
+        <TierDiagram />
       </section>
 
-      {/* 9 — Closing CTA. Tagged `footer` so it stays separable from the hero
+      {/* 7 — Closing CTA. Tagged `footer` so it stays separable from the hero
           form in the sheet: a signup from down here has read the capture and
           privacy sections first, and one from the hero has not. */}
       <section className="border-t border-border py-16 sm:py-20">
@@ -357,12 +292,7 @@ export default function Home() {
         <SignupForm location="footer" />
       </section>
 
-      <footer className="border-t border-border py-10 text-xs text-muted">
-        <p>
-          Baseline protects your attention and runs entirely on your local
-          machine.
-        </p>
-      </footer>
+      <footer className="border-t border-border py-10 text-xs text-muted"></footer>
     </main>
   );
 }

@@ -344,6 +344,19 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 9 — Closing CTA. Tagged `footer` so it stays separable from the hero
+          form in the sheet: a signup from down here has read the capture and
+          privacy sections first, and one from the hero has not. */}
+      <section className="border-t border-border py-16 sm:py-20">
+        <SectionHeading eyebrow="Beta list">
+          Want it when the build is ready?
+        </SectionHeading>
+        <p className="mb-8 max-w-xl text-muted">
+          One email when there’s something to install. Nothing else.
+        </p>
+        <SignupForm location="footer" />
+      </section>
+
       <footer className="border-t border-border py-10 text-xs text-muted">
         <p>
           Baseline protects your attention and runs entirely on your local

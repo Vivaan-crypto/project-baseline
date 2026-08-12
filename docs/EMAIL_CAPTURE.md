@@ -4,8 +4,8 @@ Beta signups land in a Google Sheet via an Apps Script web app. No third-party
 service, no signup, nothing to pay for.
 
 Scope note (AGENTS.md §4): this is the marketing site only. It has zero
-connection to user event data — the only thing that ever reaches the sheet is an
-address someone typed into a form on the landing page.
+connection to user event data — the only thing that ever reaches the sheet is a
+name and address someone typed into a form on the landing page.
 
 ---
 
@@ -14,9 +14,78 @@ address someone typed into a form on the landing page.
 | File | Does |
 |---|---|
 | `lib/signups.ts` | The only file that knows the store exists. POSTs to Apps Script, parses the reply. Swapping providers means rewriting this file and nothing else. |
-| `app/actions.ts` | `submitSignup` server action — honeypot, email validation, `source` normalisation. |
+| `app/actions.ts` | `submitSignup` server action — honeypot, name and email validation, `source` normalisation. |
 | `app/_components/signup-form.tsx` | The form. Takes a `location` prop, which becomes the sheet's `source` column. |
 | `app/(marketing)/page.tsx` | Renders it twice: `location="hero"` and `location="footer"`. |
+
+---
+
+## 1a. Sheet columns
+
+Row 1 of `Sheet1`, exactly these, in this order:
+
+| A | B | C | D | E |
+|---|---|---|---|---|
+| `timestamp` | `first_name` | `last_name` | `email` | `source` |
+
+`timestamp` is stamped by the Apps Script with `new Date()` at append time, so
+it records when the row landed and can't be backdated by whatever POSTs to the
+endpoint. Nothing about the time is sent from the site.
+
+Deduplication reads column **D**. If you reorder these columns, change
+`EMAIL_COLUMN` in the script to match or duplicate detection silently starts
+comparing the wrong column.
+
+### The script
+
+```javascript
+const EMAIL_COLUMN = 4;  // column D. Change with the header order above.
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);  // concurrent submits would otherwise overwrite rows
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
+    const body = JSON.parse(e.postData.contents);
+
+    const firstName = String(body.firstName || '').trim().slice(0, 80);
+    const lastName = String(body.lastName || '').trim().slice(0, 80);
+    const email = String(body.email || '').trim().toLowerCase();
+    const source = String(body.source || 'unknown').slice(0, 40);
+
+    if (!firstName || !lastName) {
+      return json({ ok: false, error: 'missing name' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return json({ ok: false, error: 'invalid email' });
+    }
+
+    // duplicate check — an inflated count is worse than no count
+    const existing = sheet.getLastRow() > 1
+      ? sheet.getRange(2, EMAIL_COLUMN, sheet.getLastRow() - 1, 1).getValues().flat()
+      : [];
+    if (existing.includes(email)) {
+      return json({ ok: true, duplicate: true });
+    }
+
+    sheet.appendRow([new Date(), firstName, lastName, email, source]);
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err) });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function json(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+```
+
+Paste it over the old script, then **redeploy** (§5). Editing alone changes
+nothing on the live URL.
 
 ---
 
@@ -79,7 +148,7 @@ Going through the server action instead buys three things:
 |---|---|---|
 | `{ok: true}` | new row | "You're on the list." |
 | `{ok: true, duplicate: true}` | no row written | "You're already on the list." |
-| `{ok: false, error: 'invalid email'}` | `rejected` | "That doesn't look like an email address." |
+| `{ok: false, error: 'invalid email' \| 'missing name'}` | `rejected` | "Check your name and email and try again." |
 | anything else, non-2xx, unparseable, timeout | `upstream` | "Couldn't save that. Try again in a moment." |
 
 Unparseable is a real case, not a defensive nicety: a deployment whose access
@@ -102,16 +171,22 @@ single most common thing to get stuck on.
 
 ## 6. Testing
 
-Submit a real address, check the sheet, then submit the same address again — it
-should say "You're already on the list" and add no row. Submit from both the
-hero and the footer form and confirm the `source` column differs.
+Submit a real name and address, check the sheet, then submit the same address
+again — it should say "You're already on the list" and add no row. Submit from
+both the hero and the footer form and confirm the `source` column differs.
 
 If nothing appears:
 
 - Did you redeploy after editing the script?
 - Is "Who has access" set to **Anyone**?
 - Is the sheet tab actually named `Sheet1`?
-- Is `SIGNUP_ENDPOINT` set in the environment you're actually running?
+- Is `SIGNUP_ENDPOINT` set in the environment you're actually running? Next does
+  not hot-reload env changes, so a dev server started before `.env.local`
+  existed keeps reporting "Signup isn't wired up yet" until it is restarted.
+
+If names land empty but rows still appear, the sheet has the new header row but
+the script is still the old version — the old `appendRow` writes three columns
+and ignores the names. Redeploy.
 
 Errors are visible in the server logs, not the browser console — the request is
 made server-side.

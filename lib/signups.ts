@@ -49,28 +49,38 @@ type ScriptResponse = {
 
 export type SignupResult =
   | { ok: true; alreadyRegistered: boolean }
-  // `rejected` means the script refused the address itself. The action
-  // validates with the same pattern first, so it should be unreachable — it
-  // exists so a drift between the two validators is visible rather than
-  // reported as a generic outage.
+  // `rejected` means the script refused the submission itself — a bad address
+  // or a missing name. The action validates both first, so it should be
+  // unreachable; it exists so a drift between the two validators is visible
+  // rather than reported as a generic outage.
   | { ok: false; reason: "unconfigured" | "upstream" | "rejected" };
+
+/** Errors the Apps Script raises for input it won't store. */
+const REJECTION_ERRORS = new Set(["invalid email", "missing name"]);
 
 export function isSignupConfigured(): boolean {
   return Boolean(ENDPOINT);
 }
 
+export type Signup = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  source: string;
+};
+
 /**
- * Appends an email to the signups sheet.
+ * Appends a signup to the sheet as `timestamp | first_name | last_name | email
+ * | source`. The timestamp is stamped by the Apps Script at append time rather
+ * than sent from here, so the sheet records when the row landed and can't be
+ * backdated by whatever POSTs to the endpoint.
  *
- * Duplicate handling lives in the Apps Script, which checks column B before
- * appending, so repeat submissions from the same person collapse into one row
- * instead of inflating the count that assumption #3 (AGENTS.md §10) is
- * measured on.
+ * Duplicate handling also lives in the Apps Script, which checks the email
+ * column before appending, so repeat submissions from the same person collapse
+ * into one row instead of inflating the count that assumption #3 (AGENTS.md
+ * §10) is measured on.
  */
-export async function recordSignup(
-  email: string,
-  source: string,
-): Promise<SignupResult> {
+export async function recordSignup(signup: Signup): Promise<SignupResult> {
   if (!ENDPOINT) {
     return { ok: false, reason: "unconfigured" };
   }
@@ -81,9 +91,7 @@ export async function recordSignup(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
-        SHARED_SECRET
-          ? { email, source, secret: SHARED_SECRET }
-          : { email, source },
+        SHARED_SECRET ? { ...signup, secret: SHARED_SECRET } : signup,
       ),
       // Apps Script answers a POST with a 302 to script.googleusercontent.com
       // and serves the body there. Following it is the default; stating it
@@ -114,7 +122,10 @@ export async function recordSignup(
   if (body.ok !== true) {
     return {
       ok: false,
-      reason: body.error === "invalid email" ? "rejected" : "upstream",
+      reason:
+        typeof body.error === "string" && REJECTION_ERRORS.has(body.error)
+          ? "rejected"
+          : "upstream",
     };
   }
 

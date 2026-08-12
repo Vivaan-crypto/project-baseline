@@ -7,9 +7,26 @@ import type { SignupState } from "@/lib/signup-state";
  * Permissive on purpose. The goal is to reject typos and obvious junk, not to
  * prove deliverability — an over-strict pattern silently drops real addresses,
  * which corrupts the only number this page exists to collect.
+ *
+ * Kept identical to the pattern in the Apps Script so the two validators agree;
+ * if they drift, `recordSignup` reports `rejected` rather than hiding it.
  */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254; // RFC 5321 practical limit
+
+/**
+ * `source` arrives from a hidden field, so it is attacker-controlled and gets
+ * normalised rather than trusted: lowercase, `[a-z0-9_-]` only, and short
+ * enough that it can't be used to stuff a sheet cell. Anything else becomes
+ * `unknown`, which is also what the Apps Script defaults to.
+ */
+const MAX_SOURCE_LENGTH = 40;
+
+function normaliseSource(raw: FormDataEntryValue | null): string {
+  if (typeof raw !== "string") return "unknown";
+  const cleaned = raw.trim().toLowerCase().slice(0, MAX_SOURCE_LENGTH);
+  return /^[a-z0-9_-]+$/.test(cleaned) ? cleaned : "unknown";
+}
 
 export async function submitSignup(
   _previous: SignupState,
@@ -46,12 +63,17 @@ export async function submitSignup(
     };
   }
 
-  const result = await recordSignup(email, "landing-download");
+  // Which form on the page this came from. The whole point of the column: if
+  // everyone signs up in the hero, nobody read the privacy section first.
+  const result = await recordSignup(email, normaliseSource(formData.get("source")));
 
   if (!result.ok) {
     return {
       status: "error",
-      message: "Couldn't save that. Try again in a moment.",
+      message:
+        result.reason === "rejected"
+          ? "That doesn't look like an email address."
+          : "Couldn't save that. Try again in a moment.",
     };
   }
 

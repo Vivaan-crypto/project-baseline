@@ -59,6 +59,12 @@ export function SignupForm({ location }: { location: string }) {
           className="min-w-0 flex-1 border-[3px] border-border bg-white px-3.5 py-3 font-mono text-sm text-ink outline-none placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
         />
 
+        {/* Which placement this submission came from. Lands in the sheet's
+            `source` column so hero and footer signups stay separable — see the
+            note on `location` above. Normalised server-side; it's a hidden
+            field, so its value is not trusted. */}
+        <input type="hidden" name="source" value={location} />
+
         {/* Honeypot. Hidden from sight and from assistive tech; only automated
             submitters fill it in. Paired with the check in submitSignup. */}
         <input

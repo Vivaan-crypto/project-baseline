@@ -20,7 +20,7 @@ out/
 # production
 build
 
-# python (collector/, engine/)
+# python (engine/, mock/)
 __pycache__/
 *.py[cod]
 .venv/

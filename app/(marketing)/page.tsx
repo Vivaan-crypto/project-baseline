@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
 import { TierDiagram } from "@/app/_components/tier-diagram";
@@ -292,7 +293,20 @@ export default function Home() {
         <SignupForm location="footer" />
       </section>
 
-      <footer className="border-t border-border py-10 text-xs text-muted"></footer>
+      <footer className="border-t border-border py-10 text-xs text-muted">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Baseline protects your attention and runs entirely on your local
+            machine.
+          </p>
+          <Link
+            href="/privacy"
+            className="shrink-0 underline underline-offset-4 hover:text-cobalt"
+          >
+            Privacy Policy
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }

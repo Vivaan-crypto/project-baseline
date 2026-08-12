@@ -56,21 +56,37 @@ export async function submitSignup(
   const lastName = readName(formData.get("lastName"));
 
   if (firstName.length === 0 || lastName.length === 0) {
-    return { status: "error", message: "Enter your first and last name." };
+    return {
+      status: "error",
+      message: "Enter your first and last name.",
+      reason: "missing_name",
+    };
   }
 
   const raw = formData.get("email");
   if (typeof raw !== "string") {
-    return { status: "error", message: "Enter an email address." };
+    return {
+      status: "error",
+      message: "Enter an email address.",
+      reason: "invalid_email",
+    };
   }
 
   const email = raw.trim().toLowerCase();
 
   if (email.length === 0) {
-    return { status: "error", message: "Enter an email address." };
+    return {
+      status: "error",
+      message: "Enter an email address.",
+      reason: "invalid_email",
+    };
   }
   if (email.length > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.test(email)) {
-    return { status: "error", message: "That doesn't look like an email address." };
+    return {
+      status: "error",
+      message: "That doesn't look like an email address.",
+      reason: "invalid_email",
+    };
   }
 
   if (!isSignupConfigured()) {
@@ -79,6 +95,7 @@ export async function submitSignup(
     return {
       status: "error",
       message: "Signup isn't wired up yet. Nothing was saved.",
+      reason: "unconfigured",
     };
   }
 
@@ -98,6 +115,9 @@ export async function submitSignup(
         result.reason === "rejected"
           ? "Check your name and email and try again."
           : "Couldn't save that. Try again in a moment.",
+      // Passes through unchanged, so an outage and a validator drift stay
+      // distinguishable in the funnel rather than collapsing into one bar.
+      reason: result.reason,
     };
   }
 

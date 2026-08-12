@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { THEME_INIT_SCRIPT } from "@/app/_components/theme";
 import "./globals.css";
 
@@ -54,6 +55,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {children}
         {/* Cookieless, no visitor identifiers, and a no-op in development. */}
         <Analytics />
+        {/*
+          Core Web Vitals (LCP, CLS, INP) measured on real visits rather than a
+          synthetic lab run. The `/next` entrypoint reports the App Router route
+          pattern instead of the raw URL, so samples aggregate per page.
+
+          Same privacy shape as <Analytics /> above, and the same reason it's
+          allowed here at all (AGENTS.md §3.1, §4): this measures how fast the
+          marketing site paints in a visitor's browser. It has no connection to
+          captured event data — that never leaves the device.
+        */}
+        <SpeedInsights />
       </body>
     </html>
   );

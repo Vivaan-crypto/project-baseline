@@ -73,9 +73,6 @@ export default function PrivacyPage() {
           readable instead of running prose the full width of that column. */}
       <div className="max-w-2xl">
         <header className="py-16 sm:py-20">
-          <p className="mb-5 font-mono text-xs uppercase tracking-widest text-muted">
-            Legal
-          </p>
           <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
             Privacy Policy
           </h1>
@@ -176,10 +173,6 @@ export default function PrivacyPage() {
             One purpose: emailing you about Baseline. Progress updates, and a
             message when there is something to install.
           </p>
-          <p>
-            It will not be used for anything else, added to any other list, or
-            used to contact you about an unrelated project.
-          </p>
         </Section>
 
         <Section title="How long it is kept">
@@ -195,10 +188,6 @@ export default function PrivacyPage() {
             Email <MailLink /> and your details will be removed from the sheet.
             No explanation needed, no confirmation flow, no attempt to talk you
             out of it.
-          </p>
-          <p>
-            You can also ask what is stored about you, and the answer will be
-            your name, your address, the timestamp, and the form location.
           </p>
           <p>
             Depending on where you live you may have additional rights over your

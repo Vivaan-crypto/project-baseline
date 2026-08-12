@@ -5,11 +5,14 @@
 Re-exports on an interval. The dev server hot-reloads the JSON import when
 the file changes, so the dashboard updates on its own without a refresh.
 
-This lives in engine/ rather than collector/ on purpose. collector/ is the
+This lives here rather than in the collector on purpose. The collector is the
 AGPL, publicly auditable component (AGENTS.md hard rule 7) and engine/ is
 closed; having the collector import the engine to refresh a view would drag
-closed code into the audited one and break that split. Capture and
-presentation stay separate processes that share only the SQLite file.
+closed code into the audited one and break that split. That split is now a
+repo boundary — the collector ships from Proj-Baseline/baseline-collector —
+which makes the same mistake harder to make by accident, not impossible.
+Capture and presentation stay separate processes that share only the SQLite
+file.
 """
 
 from __future__ import annotations

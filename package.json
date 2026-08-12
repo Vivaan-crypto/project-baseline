@@ -12,13 +12,14 @@
     "mock": "python mock/mockgen.py --out mock/mock_events.db",
     "data": "python -m engine.export",
     "dev:live": "node scripts/dev-live.mjs",
+    "collect:install": "pip install git+https://github.com/Proj-Baseline/baseline-collector",
     "collect": "python -m collector run",
     "collect:doctor": "python -m collector doctor",
     "collect:status": "python -m collector status",
     "data:real": "python -m engine.export --db ~/.baseline/events.db --source real",
     "data:watch": "python -m engine.watch --db ~/.baseline/events.db --source real",
     "test:py": "python -m pytest tests -q",
-    "typecheck:py": "python -m mypy engine collector"
+    "typecheck:py": "python -m mypy engine"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

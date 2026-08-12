@@ -1,0 +1,11 @@
+{
+    "app": {
+        "description": "src"
+    },
+    "engine": {
+        "description": "src"
+    },
+    "collector": {
+        "description": "src"
+    }
+}

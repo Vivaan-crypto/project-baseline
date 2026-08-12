@@ -55,3 +55,4 @@ next-env.d.ts
 # dashboard.sample.json is the synthetic one, and that one IS tracked so a
 # fresh clone can build without capturing anything first.
 app/_data/dashboard.json
+.vscode/private-folder-alias.json

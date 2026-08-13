@@ -45,16 +45,6 @@ export function TierDiagram() {
           className="border-t-[3px] border-border md:border-l-[3px] md:border-t-0"
         />
       </div>
-
-      {/* Deliberately not "the left column" / "the right column": these
-          stack vertically on narrow screens, where left and right mean
-          nothing. Refer to the tiers by name instead. */}
-      <p className="border-t-[3px] border-border px-6 py-5 text-[15px] leading-relaxed">
-        Activity and Trace come free with every tracker going. ActivityWatch,
-        RescueTime, Toggl, Clockify, all of them. Charging for those would
-        just start a comparison this loses. The other five are the reason to
-        pay, and nothing else measures them.
-      </p>
     </div>
   );
 }

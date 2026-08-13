@@ -215,12 +215,20 @@ export default function Home() {
               </ul>
             </div>
           </div>
-          <p className="mt-10 max-w-2xl text-sm leading-relaxed">
-            Baseline monitors rhythm and focus patterns—never your private
-            content. Our core collector is AGPL-licensed and open source. You
-            don't have to take our word for it; you can inspect the code
-            anytime.
-          </p>
+          {/* The section's payoff line, so it gets the card treatment used for
+              the Fragments headline rather than sitting as body copy under two
+              lists. Cobalt on the leading edge per §14: this is an emphasis
+              accent, and the rules directly above already use cobalt the same
+              way. Not lime (reserved for action/focus) and not red — a privacy
+              guarantee is an intentional absence, not a warning. */}
+          <div className="mt-10 border-[3px] border-l-[12px] border-border border-l-cobalt bg-white p-6 shadow-[var(--shadow-lg)] sm:p-8">
+            <p className="max-w-2xl text-base leading-relaxed">
+              Baseline monitors rhythm and focus patterns—never your private
+              content. Our core collector is AGPL-licensed and open source. You
+              don't have to take our word for it; you can inspect the code
+              anytime.
+            </p>
+          </div>
         </section>
 
         {/* 5 — Why not a time tracker */}

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/app/_components/logo";
+import { ThemeToggle } from "@/app/_components/theme";
 
 /**
  * Top chrome for the public pages: wordmark left, an optional slot right.
@@ -19,7 +20,15 @@ export function MarketingHeader({ right }: { right?: ReactNode }) {
   return (
     <header className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-6 pt-8 sm:px-8">
       <Logo />
-      {right}
+      {/* The theme toggle is site chrome, not page content, so it is rendered
+          here rather than passed in: every public page gets one, including any
+          added later. `right` carries whatever is specific to a single page and
+          sits inboard of it, which keeps the toggle in the same corner as the
+          dashboard's (app/dashboard/layout.tsx) as you move between them. */}
+      <div className="flex items-center gap-2">
+        {right}
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

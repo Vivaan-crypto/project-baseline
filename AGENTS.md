@@ -58,7 +58,7 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 4. **No clinical language** in code, comments, UI copy, docs, or commits. Banned: stress, burnout, fatigue, anxiety, depression, mental health, cognitive impairment. Use: rhythm, baseline, deviation, drift, band, pattern, variance.
 5. **Never gate the user's own history behind payment.** All historical data accessible in all tiers, always, including export.
 6. **Raw event retention is 30 days, then hard delete.** Derived aggregates persist forever. See section 5 — this is why storage is two-tier.
-7. **The collector stays open source** (AGPL). Engine, UI, and analytics stay closed. Users must be able to audit exactly what is captured.
+7. **The collector stays open source** (AGPL), in its own public repo — `Proj-Baseline/baseline-collector`. Engine, UI, and analytics stay closed. Users must be able to audit exactly what is captured.
 8. **No account required** for local-only use.
 9. **Never use keystroke dynamics for identification or authentication.** Under GDPR that makes it Article 9 special category data. It is also the largest BIPA exposure.
 10. **No general model trained on user data.** Cold start is solved by public datasets or statistical priors, never by collecting from users. See section 7.
@@ -70,25 +70,33 @@ Non-negotiable. Do not implement anything that violates them. Do not propose wor
 ```
 baseline/                Next.js on Vercel — marketing + beta signup. Lives at
 │                         repo root: package.json, app/, next.config.ts, etc.
-├── collector/           Python. Passive capture → local SQLite. AGPL, public.
-│                         Built 2026-08-07. Writes to ~/.baseline/events.db,
-│                         deliberately outside the repo.
 ├── engine/              Python. Rollup, baseline computation, drift detection.
 │                         Built 2026-08-06. Pure functions + engine/export.py CLI.
 ├── tests/engine/        pytest, hand-built fixtures. 65 cases.
+├── tests/integration/   The collector→engine schema contract. Skips when the
+│                         collector isn't installed.
 └── desktop/             Tauri shell + Next.js static export. NO SERVER.
 ```
 
-The marketing site is the repo root on purpose, not a `site/` subfolder — it was moved there 2026-08-05 so Vercel deploys with zero Root Directory configuration. `collector/`, `engine/`, and `desktop/` are separate Python/Tauri subdirectories that never touch the Next.js build.
+Capture is **not in this repo.** It lives in `Proj-Baseline/baseline-collector`, extracted 2026-08-12. See below.
 
-### collector/
+The marketing site is the repo root on purpose, not a `site/` subfolder — it was moved there 2026-08-05 so Vercel deploys with zero Root Directory configuration. `engine/` and `desktop/` are separate Python/Tauri subdirectories that never touch the Next.js build.
+
+### The collector — separate repo
+**`github.com/Proj-Baseline/baseline-collector`.** Python, AGPL, public. Passive capture → local SQLite at `~/.baseline/events.db`, deliberately outside any repo. Built 2026-08-07 inside this repo as `collector/`; extracted to its own 2026-08-12. Nothing here imports it and it imports nothing from here.
+
+```bash
+npm run collect:install   # pip install git+https://github.com/Proj-Baseline/baseline-collector
+npm run collect           # python -m collector run — works once installed
+```
+
 Windows-first (`pynput` + Win32 via ctypes). macOS is ~15 lines different (`NSWorkspace.frontmostApplication` via pyobjc) but blocked on notarization and the Accessibility/Input Monitoring permission flow. Do not start macOS work without an explicit decision.
 
-Near-zero dependencies. This is the audited component — every dependency needs justification. **Built 2026-08-07.** One runtime dependency (`pynput`, for global hooks); window identity uses `ctypes` from the stdlib and needs nothing. See `collector/README.md`.
+Near-zero dependencies. This is the audited component — every dependency needs justification. One runtime dependency (`pynput`, for global hooks); window identity uses `ctypes` from the stdlib and needs nothing. Its README is the reference for flags, install, and known limits.
 
-**`collector/classify.py` is the privacy boundary and the most important file in the repo.** It is the only code that ever sees a keystroke: a key goes in, one of six literal strings comes out, and the key is never stored, logged, buffered or passed on. Hard rule 2 and the landing page's capture list both live or die here. `tests/collector/test_classify.py` mechanises the promise — it asserts over the entire printable ASCII range that no character survives classification, and that `'a'`, `'7'` and `'$'` are indistinguishable afterwards (otherwise key classes would leak the shape of a password). If a feature ever needs the actual key, the feature is designed wrong; change the feature, not this file.
+**`collector/classify.py` is the privacy boundary and the most important file in the project**, even though it is now in the other repo. It is the only code that ever sees a keystroke: a key goes in, one of six literal strings comes out, and the key is never stored, logged, buffered or passed on. Hard rule 2 and the landing page's capture list both live or die there. That repo's `tests/test_classify.py` mechanises the promise — it asserts over the entire printable ASCII range that no character survives classification, and that `'a'`, `'7'` and `'$'` are indistinguishable afterwards (otherwise key classes would leak the shape of a password). If a feature ever needs the actual key, the feature is designed wrong; change the feature, not that file. Landing-page copy about what is captured is a claim about code you can no longer read from here — check it against that repo before editing it.
 
-Capture writes exactly the schema `engine/db.py` reads, which is the whole reason going from synthetic to real data required no engine changes at all. Verified end-to-end: a real 20-second capture recorded the foreground app but produced **zero** blocks, because no keys or mouse events occurred — the "a `windows` row is not evidence a human is present" invariant (§5's known trap) holds on real data, not just fixtures.
+Capture writes exactly the schema `engine/db.py` reads, which is the whole reason going from synthetic to real data required no engine changes at all. **That schema is now a cross-repo contract**, so it is tested from both sides: the collector repo asserts what it writes, and `tests/integration/test_collector_contract.py` here reads a database written by the real `Store` through `engine/db.py` and pushes it through `blocks()`. The local half skips when the collector isn't installed, which means a green `npm run test:py` on a machine without it proves nothing about the contract — install it before trusting that. Verified end-to-end: a real 20-second capture recorded the foreground app but produced **zero** blocks, because no keys or mouse events occurred — the "a `windows` row is not evidence a human is present" invariant (§5's known trap) holds on real data, not just fixtures.
 
 ### engine/
 Runs on-device. Trains per-user only. Personalized models substantially outperform one-size-fits-all for this signal, so per-user training is both the better approach and what makes the no-shared-data architecture viable.
@@ -326,6 +334,8 @@ Main pitch: Fragments headlined, Bedrock/Residue/Core/Rhythm Map as the rest of 
 
 **Updated 2026-08-07:** `collector/` now exists too, so the pipeline runs end to end on real capture. The remaining gap is no longer "can it read real data" but "has anyone run it for long enough to learn anything" — nobody has yet accumulated the 14 days a baseline needs, and the two open findings below (Residue's constant, `IDLE_GAP`'s value) can only be settled by that. Don't read "implemented and captures real data" as "validated on real data"; those are still different claims.
 
+**Updated 2026-08-12:** capture moved to `Proj-Baseline/baseline-collector` and is installed rather than vendored. Nothing about the pipeline changed — same package name, same CLI, same database — but "run the collector" now has an install step in front of it, and a checkout of this repo alone can no longer capture anything.
+
 ---
 
 ## 9. Surfaces and sequencing
@@ -431,6 +441,7 @@ Do not reopen without a written reason.
 | `npm run dev:live` starts the dev server and the exporter, but never the collector | Beginning to record someone's keystrokes should be something they typed on purpose, not a side effect of starting a dev server |
 | `collector/` built 2026-08-07; `classify.py` isolated as a standalone module with its own exhaustive test file | The key→class mapping is three lines of logic and could have been inlined into the listener callback. It is a separate audited module because it is the single point where hard rule 2 is kept or broken, and "the characters you type are never captured" should be verifiable by reading one short file rather than by trusting a callback buried in a capture loop |
 | Mouse *moves* throttled to 1/sec; clicks and scrolls never throttled | Moves fire hundreds of times a second and are only ever evidence that a human is present. Clicks and scrolls are discrete intentional acts whose timing carries information, so throttling them would destroy signal rather than noise |
+| Collector extracted to `Proj-Baseline/baseline-collector` and installed as a package (2026-08-12), rather than vendored under `collector/` | The audited component is easier to audit when it is the whole repository rather than one directory inside a closed product. It also makes the AGPL boundary a repo boundary instead of a convention. Cost: the collector→engine schema contract now spans two repos, so it is tested from both sides (§4), and a fresh clone of this repo cannot capture anything until `npm run collect:install` has run |
 | Collector DB defaults to `~/.baseline/events.db`, outside the repo | `.gitignore` already excludes `*.db`, but keeping personal event data out of the working tree entirely is the stronger guarantee — an ignore rule is one `git add -f` from being wrong |
 
 ---

@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { MarketingHeader } from "@/app/_components/marketing-header";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
 import { TierDiagram } from "@/app/_components/tier-diagram";
@@ -116,253 +118,229 @@ function IncludedBadge() {
 
 export default function Home() {
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-6 sm:px-8">
-      {/* 1 — Hero */}
-      <section className="py-20 sm:py-28">
-        <p className="mb-5 font-mono text-xs uppercase tracking-widest text-muted">
-          Baseline for Windows
-        </p>
-        <h1 className="max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-          You worked 8 hours today. How much of it was actual focus?
-        </h1>
-        <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-          Baseline reads the natural cadence of your work to show you how
-          shattered your attention was. Track continuous focus runs, context
-          switches, and recovery time—all without invasive screenshots or
-          keylogging. Protect your attention, don't just clock your hours.
-        </p>
-        <div className="mt-9">
-          <SignupForm location="hero" />
-        </div>
-      </section>
-
-      {/* 1a — What's free vs. what's paid */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Depth Over Duration">
-          Focus isn't total hours. It’s unbroken time.
-        </SectionHeading>
-        <TierDiagram />
-      </section>
-
-      {/* 3 — Fragments, headlined */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="The Core Metric">
-          Did your day come in blocks or shards?
-        </SectionHeading>
-        <div className="border-[3px] border-border bg-white p-8 shadow-[var(--shadow-lg)]">
-          <div className="flex items-baseline gap-3">
-            <span className="font-sans text-5xl font-bold tabular-nums sm:text-6xl">
-              11
-            </span>
-            <span className="text-lg text-muted">pieces today</span>
+    <>
+      {/* The public header used to come from app/(marketing)/layout.tsx. It is
+          rendered per page now so the policy page can put a Back link opposite
+          the wordmark; a layout cannot vary by which child it wraps. Nothing in
+          the right-hand slot here — there is nowhere to go back to from the
+          root. */}
+      <MarketingHeader />
+      <main className="mx-auto w-full max-w-4xl flex-1 px-6 sm:px-8">
+        {/* 1 — Hero */}
+        <section className="py-20 sm:py-28">
+          <p className="mb-5 font-mono text-xs uppercase tracking-widest text-muted">
+            Baseline for Windows
+          </p>
+          <h1 className="max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+            You were online for 8 hours today. How much of it was productive?
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+            Baseline reads the natural cadence of your work to show you how
+            fragmented your attention was. Track continuous focus runs, context
+            switches, and recovery time—all without invasive screenshots or
+            keylogging. Protect your attention, don't just clock your hours.
+          </p>
+          <div className="mt-9">
+            <SignupForm location="hero" />
           </div>
-          <p className="mt-2 font-mono text-sm text-muted">
-            Longest block: nine minutes.
+        </section>
+
+        {/* 5 — Why not a time tracker */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="The Difference">
+            Built for focus, not just time tracking
+          </SectionHeading>
+          <p className="mb-8 max-w-2xl text-muted">
+            Stop counting hours and start protecting your focus. Traditional
+            tools log where your time went, but Baseline tells you the
+            structural health of your workday.
           </p>
-          <p className="mt-6 max-w-xl text-base leading-relaxed">
-            Most tools just total up your screen time. Baseline looks deeper
-            into your rhythm: did you get a solid two-hour stretch of flow, or
-            did constant tab-switching shatter your morning into 11 useless
-            fragments?
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-136 border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    What you want to know
+                  </th>
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    Traditional App Logs
+                  </th>
+                  <th className="py-3 font-medium text-muted">Baseline</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.question} className="border-b border-border">
+                    <td className="py-3.5 pr-4 align-top">{row.question}</td>
+                    <td className="py-3.5 pr-4 align-top text-muted">
+                      {row.tracker}
+                    </td>
+                    <td className="py-3.5 align-top font-bold text-cobalt">
+                      {row.baseline}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* 3 — Fragments, headlined */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Fragments">
+            Did your day come in blocks or shards?
+          </SectionHeading>
+          <div className="border-[3px] border-border bg-white p-8 shadow-(--shadow-lg)">
+            <div className="flex items-baseline gap-3">
+              <span className="font-sans text-5xl font-bold tabular-nums sm:text-6xl">
+                11
+              </span>
+              <span className="text-lg text-muted">pieces today</span>
+            </div>
+            <p className="mt-2 font-mono text-sm text-muted">
+              Longest block: nine minutes.
+            </p>
+            <p className="mt-6 max-w-xl text-base leading-relaxed">
+              Most tools just total up your screen time. Baseline looks deeper
+              into your rhythm: did you get a solid two-hour stretch of flow, or
+              did constant tab-switching shatter your morning into 11 less
+              productive fragments?
+            </p>
+            <div className="mt-6">
+              <IncludedBadge />
+            </div>
+          </div>
+        </section>
+
+        {/* 4 — What it sees vs. what it never sees */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Privacy By Design">
+            Your data stays on your machine. Period.
+          </SectionHeading>
+          <div className="grid gap-10 sm:grid-cols-2 sm:gap-12">
+            <div>
+              <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                <span aria-hidden="true" className="text-cobalt">
+                  ●
+                </span>
+                Captured
+              </h3>
+              <ul className="space-y-3.5">
+                {CAPTURED.map((item) => (
+                  <li
+                    key={item}
+                    className="border-l-[3px] border-cobalt/50 pl-4 text-sm leading-relaxed text-muted"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
+                <span aria-hidden="true" className="text-negative">
+                  ○
+                </span>
+                Never captured
+              </h3>
+              <ul className="space-y-3.5">
+                {NEVER_CAPTURED.map((item) => (
+                  <li
+                    key={item}
+                    className="border-l-[3px] border-negative/50 pl-4 text-sm leading-relaxed text-muted"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {/* The section's payoff line, so it gets the card treatment used for
+              the Fragments headline rather than sitting as body copy under two
+              lists. Green on the leading edge: the brand's signal palette has
+              no green of its own, so this reuses --cat-focus, which is already
+              defined for both themes (it lightens on dark so the edge stays
+              visible against the darker card). Not lime — that is reserved for
+              action and focus — and not red, since a privacy guarantee is an
+              intentional absence rather than a warning. */}
+          <div className="mt-10 border-[3px] border-l-12 border-border border-l-cat-focus bg-white p-6 shadow-(--shadow-lg) sm:p-8">
+            <p className="max-w-2xl text-base leading-relaxed">
+              Baseline tracks how you work, never what you’re working on. Your
+              private data stays entirely yours. Because trust shouldn't be
+              blind, our core collector is fully open source (AGPL-licensed).
+              You're always welcome to review the code and verify it for
+              yourself.
+            </p>
+            {/* The sentence above makes a claim the reader had no way to act
+                on. Cobalt because the brand reserves it for links, which is
+                also why the leading edge moved off it. External, so a plain
+                anchor rather than next/link. */}
+            <a
+              href="https://github.com/Proj-Baseline/baseline-collector"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="press mt-6 inline-flex items-center gap-2 border-[3px] border-cobalt px-4 py-2.5 font-mono text-sm font-bold text-cobalt shadow-(--shadow-sm) hover:bg-cobalt hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+            >
+              Baseline Collector on GitHub
+              <span aria-hidden="true">-&gt;</span>
+            </a>
+          </div>
+        </section>
+
+        {/* 6 — Rhythm Map */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Baseline Pro">
+            Discover when you actually sustain work
+          </SectionHeading>
+          <p className="mb-8 max-w-2xl text-muted">
+            Most people think they’re sharpest at 9am, but their data says 4pm.
+            Baseline builds a 30-day map of your history, weekday by hour, to
+            pinpoint your natural flow states. It fills in as you go—even your
+            first session shows something, getting sharper with time.
           </p>
+          <RhythmMap />
           <div className="mt-6">
             <IncludedBadge />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* 4 — Bedrock, Residue, Core */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Baseline Pro">
-          The metrics that hold your day together
-        </SectionHeading>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {PAID_FEATURES.map((feature) => (
-            <div
-              key={feature.name}
-              className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">{feature.name}</h3>
-                <IncludedBadge />
-              </div>
-              <p className="text-sm font-medium leading-relaxed">
-                {feature.headline}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted">
-                {feature.subtitle}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+        {/* 1a — What's free vs. what's paid */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Depth Over Duration">
+            Focus isn't total hours. It’s unbroken time.
+          </SectionHeading>
+          <TierDiagram />
+        </section>
 
-      {/* 5 — What it sees vs. what it never sees */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Privacy By Design">
-          Your data stays on your machine. Period.
-        </SectionHeading>
-        <div className="grid gap-10 sm:grid-cols-2 sm:gap-12">
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
-              <span aria-hidden="true" className="text-cobalt">
-                ●
-              </span>
-              Captured
-            </h3>
-            <ul className="space-y-3.5">
-              {CAPTURED.map((item) => (
-                <li
-                  key={item}
-                  className="border-l-[3px] border-cobalt/50 pl-4 text-sm leading-relaxed text-muted"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
-              <span aria-hidden="true" className="text-negative">
-                ○
-              </span>
-              Never captured
-            </h3>
-            <ul className="space-y-3.5">
-              {NEVER_CAPTURED.map((item) => (
-                <li
-                  key={item}
-                  className="border-l-[3px] border-negative/50 pl-4 text-sm leading-relaxed text-muted"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className="mt-10 max-w-2xl text-sm leading-relaxed">
-          Baseline monitors rhythm and focus patterns—never your private
-          content. Our core collector is AGPL-licensed and open source. You
-          don't have to take our word for it; you can inspect the code anytime.
-        </p>
-      </section>
-
-      {/* 6 — Why not a time tracker */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="The Difference">
-          Built for focus, not just time tracking
-        </SectionHeading>
-        <p className="mb-8 max-w-2xl text-muted">
-          Stop counting hours and start protecting your focus. Traditional tools
-          log where your time went, but Baseline tells you the structural health
-          of your workday.
-        </p>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="py-3 pr-4 font-medium text-muted">
-                  What you want to know
-                </th>
-                <th className="py-3 pr-4 font-medium text-muted">
-                  Traditional App Logs
-                </th>
-                <th className="py-3 font-medium text-muted">Baseline</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row) => (
-                <tr key={row.question} className="border-b border-border">
-                  <td className="py-3.5 pr-4 align-top">{row.question}</td>
-                  <td className="py-3.5 pr-4 align-top text-muted">
-                    {row.tracker}
-                  </td>
-                  <td className="py-3.5 align-top font-bold text-cobalt">
-                    {row.baseline}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 7 — Rhythm Map */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Baseline Pro">
-          Discover when you actually sustain work
-        </SectionHeading>
-        <p className="mb-8 max-w-2xl text-muted">
-          Most people think they’re sharpest at 9am, but their data says 4pm.
-          Baseline builds a 30-day map of your history, weekday by hour, to
-          pinpoint your natural flow states. It fills in as you go—even your
-          first session shows something, getting sharper with time.
-        </p>
-        <RhythmMap />
-        <div className="mt-6">
-          <IncludedBadge />
-        </div>
-      </section>
-
-      {/* 8 — Honest status */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Status">Where we are right now</SectionHeading>
-        <div className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)] sm:p-7">
-          <dl className="space-y-4 text-sm">
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Stage
-              </dt>
-              <dd className="leading-relaxed">
-                v1.0 is live. Built from the ground up for performance and
-                privacy, Baseline is fully operational and ready to help you
-                reclaim your focus.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Day one
-              </dt>
-              <dd className="leading-relaxed">
-                Activity, Trace, and Fragments work seamlessly from your first
-                session. Bedrock, Residue, and Core lock in shortly after.
-                Rhythm Map begins building your profile instantly.
-              </dd>
-            </div>
-            <div className="sm:flex sm:gap-6">
-              <dt className="mb-1 w-40 shrink-0 font-mono text-xs uppercase tracking-wide text-muted sm:mb-0">
-                Pricing
-              </dt>
-              <dd className="leading-relaxed">
-                Activity and Trace: Free forever. Fragments, Bedrock, Residue,
-                Core, and Rhythm Map: Try them with a free 7-day trial. No
-                credit card required.
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-
-      {/* 9 — Closing CTA. Tagged `footer` so it stays separable from the hero
+        {/* 7 — Closing CTA. Tagged `footer` so it stays separable from the hero
           form in the sheet: a signup from down here has read the capture and
           privacy sections first, and one from the hero has not. */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Beta list">
-          Want it when the build is ready?
-        </SectionHeading>
-        <p className="mb-8 max-w-xl text-muted">
-          One email when there’s something to install. Nothing else.
-        </p>
-        <SignupForm location="footer" />
-      </section>
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Beta list">
+            Want it when the build is ready?
+          </SectionHeading>
+          <p className="mb-8 max-w-xl text-muted">
+            One email when there’s something to install. Nothing else.
+          </p>
+          <SignupForm location="footer" />
+        </section>
 
-      <footer className="border-t border-border py-10 text-xs text-muted">
-        <p>
-          Baseline protects your attention and runs entirely on your local
-          machine.
-        </p>
-      </footer>
-    </main>
+        <footer className="border-t border-border py-10 text-xs text-muted">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Baseline protects your attention and runs entirely on your local
+              machine.
+            </p>
+            <Link
+              href="/privacy"
+              className="shrink-0 underline underline-offset-4 hover:text-cobalt"
+            >
+              Privacy Policy
+            </Link>
+          </div>
+        </footer>
+      </main>
+    </>
   );
 }

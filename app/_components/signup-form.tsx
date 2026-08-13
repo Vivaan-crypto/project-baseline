@@ -40,13 +40,24 @@ export function SignupForm({ location }: { location: string }) {
   const lastNameId = `${id}-last-name`;
   const emailId = `${id}-email`;
 
+  // Depends on the whole state object rather than `state.status`: every submit
+  // returns a fresh object, so two failures in a row are two events instead of
+  // one. Re-renders that don't change the state don't re-fire.
   useEffect(() => {
-    // Fire once per successful capture, not on every re-render.
-    if (state.status === "success" && !reported.current) {
+    if (state.status === "success") {
+      // Fire once per successful capture, not on every re-render.
+      if (reported.current) return;
       reported.current = true;
       track("signup_complete", { location });
+      return;
     }
-  }, [state.status, location]);
+    // Without this the drop between beta_signup_click and signup_complete is a
+    // number with no explanation — a typo'd address and a dead endpoint look
+    // identical. `reason` is a fixed tag, never the user's input.
+    if (state.status === "error") {
+      track("signup_error", { location, reason: state.reason });
+    }
+  }, [state, location]);
 
   if (state.status === "success") {
     return (

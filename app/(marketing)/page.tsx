@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { MarketingHeader } from "@/app/_components/marketing-header";
 import { SignupForm } from "@/app/_components/signup-form";
 import { RhythmMap } from "@/app/_components/rhythm-map";
 import { TierDiagram } from "@/app/_components/tier-diagram";
@@ -152,17 +153,19 @@ export default function Home() {
           <p className="mt-2 font-mono text-sm text-muted">
             Longest block: nine minutes.
           </p>
-          <p className="mt-6 max-w-xl text-base leading-relaxed">
-            Most tools just total up your screen time. Baseline looks deeper
-            into your rhythm: did you get a solid two-hour stretch of flow, or
-            did constant tab-switching shatter your morning into 11 useless
-            fragments?
+          <h1 className="max-w-2xl text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+            You worked 8 hours today. How much of it was actual focus?
+          </h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+            Baseline reads the natural cadence of your work to show you how
+            shattered your attention was. Track continuous focus runs, context
+            switches, and recovery time—all without invasive screenshots or
+            keylogging. Protect your attention, don't just clock your hours.
           </p>
-          <div className="mt-6">
-            <IncludedBadge />
+          <div className="mt-9">
+            <SignupForm location="hero" />
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* 4 — What it sees vs. what it never sees */}
       <section className="border-t border-border py-16 sm:py-20">
@@ -175,44 +178,48 @@ export default function Home() {
               <span aria-hidden="true" className="text-cobalt">
                 ●
               </span>
-              Captured
-            </h3>
-            <ul className="space-y-3.5">
-              {CAPTURED.map((item) => (
-                <li
-                  key={item}
-                  className="border-l-[3px] border-cobalt/50 pl-4 text-sm leading-relaxed text-muted"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
+              <span className="text-lg text-muted">pieces today</span>
+            </div>
+            <p className="mt-2 font-mono text-sm text-muted">
+              Longest block: nine minutes.
+            </p>
+            <p className="mt-6 max-w-xl text-base leading-relaxed">
+              Most tools just total up your screen time. Baseline looks deeper
+              into your rhythm: did you get a solid two-hour stretch of flow, or
+              did constant tab-switching shatter your morning into 11 useless
+              fragments?
+            </p>
+            <div className="mt-6">
+              <IncludedBadge />
+            </div>
           </div>
-          <div>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide">
-              <span aria-hidden="true" className="text-negative">
-                ○
-              </span>
-              Never captured
-            </h3>
-            <ul className="space-y-3.5">
-              {NEVER_CAPTURED.map((item) => (
-                <li
-                  key={item}
-                  className="border-l-[3px] border-negative/50 pl-4 text-sm leading-relaxed text-muted"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
+        </section>
+
+        {/* 4 — Bedrock, Residue, Core */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Baseline Pro">
+            The metrics that hold your day together
+          </SectionHeading>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {PAID_FEATURES.map((feature) => (
+              <div
+                key={feature.name}
+                className="border-[3px] border-border bg-white p-6 shadow-[var(--shadow-lg)]"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-bold">{feature.name}</h3>
+                  <IncludedBadge />
+                </div>
+                <p className="text-sm font-medium leading-relaxed">
+                  {feature.headline}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-muted">
+                  {feature.subtitle}
+                </p>
+              </div>
+            ))}
           </div>
-        </div>
-        <p className="mt-10 max-w-2xl text-sm leading-relaxed">
-          Baseline monitors rhythm and focus patterns—never your private
-          content. Our core collector is AGPL-licensed and open source. You
-          don't have to take our word for it; you can inspect the code anytime.
-        </p>
-      </section>
+        </section>
 
       {/* 5 — Why not a time tracker */}
       <section className="border-t border-border py-16 sm:py-20">
@@ -225,35 +232,46 @@ export default function Home() {
           of your workday.
         </p>
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[34rem] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="py-3 pr-4 font-medium text-muted">
-                  What you want to know
-                </th>
-                <th className="py-3 pr-4 font-medium text-muted">
-                  Traditional App Logs
-                </th>
-                <th className="py-3 font-medium text-muted">Baseline</th>
-              </tr>
-            </thead>
-            <tbody>
-              {COMPARISON.map((row) => (
-                <tr key={row.question} className="border-b border-border">
-                  <td className="py-3.5 pr-4 align-top">{row.question}</td>
-                  <td className="py-3.5 pr-4 align-top text-muted">
-                    {row.tracker}
-                  </td>
-                  <td className="py-3.5 align-top font-bold text-cobalt">
-                    {row.baseline}
-                  </td>
+        {/* 6 — Why not a time tracker */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="The Difference">
+            Built for focus, not just time tracking
+          </SectionHeading>
+          <p className="mb-8 max-w-2xl text-muted">
+            Stop counting hours and start protecting your focus. Traditional
+            tools log where your time went, but Baseline tells you the
+            structural health of your workday.
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[34rem] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    What you want to know
+                  </th>
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    Traditional App Logs
+                  </th>
+                  <th className="py-3 font-medium text-muted">Baseline</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.question} className="border-b border-border">
+                    <td className="py-3.5 pr-4 align-top">{row.question}</td>
+                    <td className="py-3.5 pr-4 align-top text-muted">
+                      {row.tracker}
+                    </td>
+                    <td className="py-3.5 align-top font-bold text-cobalt">
+                      {row.baseline}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
       {/* 6 — Rhythm Map */}
       <section className="border-t border-border py-16 sm:py-20">
@@ -283,30 +301,31 @@ export default function Home() {
       {/* 7 — Closing CTA. Tagged `footer` so it stays separable from the hero
           form in the sheet: a signup from down here has read the capture and
           privacy sections first, and one from the hero has not. */}
-      <section className="border-t border-border py-16 sm:py-20">
-        <SectionHeading eyebrow="Beta list">
-          Want it when the build is ready?
-        </SectionHeading>
-        <p className="mb-8 max-w-xl text-muted">
-          One email when there’s something to install. Nothing else.
-        </p>
-        <SignupForm location="footer" />
-      </section>
-
-      <footer className="border-t border-border py-10 text-xs text-muted">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            Baseline protects your attention and runs entirely on your local
-            machine.
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="Beta list">
+            Want it when the build is ready?
+          </SectionHeading>
+          <p className="mb-8 max-w-xl text-muted">
+            One email when there’s something to install. Nothing else.
           </p>
-          <Link
-            href="/privacy"
-            className="shrink-0 underline underline-offset-4 hover:text-cobalt"
-          >
-            Privacy Policy
-          </Link>
-        </div>
-      </footer>
-    </main>
+          <SignupForm location="footer" />
+        </section>
+
+        <footer className="border-t border-border py-10 text-xs text-muted">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Baseline protects your attention and runs entirely on your local
+              machine.
+            </p>
+            <Link
+              href="/privacy"
+              className="shrink-0 underline underline-offset-4 hover:text-cobalt"
+            >
+              Privacy Policy
+            </Link>
+          </div>
+        </footer>
+      </main>
+    </>
   );
 }

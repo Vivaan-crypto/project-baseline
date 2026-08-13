@@ -94,24 +94,21 @@ export default function PrivacyPage() {
         {/* max-w-4xl above matches the header and the landing page, so the left
           edge lines up with the logo. The inner max-w-2xl keeps the measure
           readable instead of running prose the full width of that column. */}
-        <div className="max-w-2xl">
-          <header className="py-16 sm:py-20">
-            <p className="mb-5 font-mono text-xs uppercase tracking-widest text-muted">
-              Legal
-            </p>
-            <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
-              Privacy Policy
-            </h1>
-            <p className="mt-6 font-mono text-xs uppercase tracking-wide text-muted">
-              Last updated: {LAST_UPDATED}
-            </p>
-            <p className="mt-6 leading-relaxed text-muted">
-              This policy covers this website only. Baseline the application
-              does not exist yet — there is nothing to download and no software
-              collecting anything about you. When there is, this page will be
-              rewritten before it ships.
-            </p>
-          </header>
+      <div className="max-w-2xl">
+        <header className="py-16 sm:py-20">
+          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+            Privacy Policy
+          </h1>
+          <p className="mt-6 font-mono text-xs uppercase tracking-wide text-muted">
+            Last updated: {LAST_UPDATED}
+          </p>
+          <p className="mt-6 leading-relaxed text-muted">
+            This policy covers this website only. Baseline the application does
+            not exist yet — there is nothing to download and no software
+            collecting anything about you. When there is, this page will be
+            rewritten before it ships.
+          </p>
+        </header>
 
           <Section title="Who runs this">
             <p>
@@ -197,16 +194,12 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="What it is used for">
-            <p>
-              One purpose: emailing you about Baseline. Progress updates, and a
-              message when there is something to install.
-            </p>
-            <p>
-              It will not be used for anything else, added to any other list, or
-              used to contact you about an unrelated project.
-            </p>
-          </Section>
+        <Section title="What it is used for">
+          <p>
+            One purpose: emailing you about Baseline. Progress updates, and a
+            message when there is something to install.
+          </p>
+        </Section>
 
           <Section title="How long it is kept">
             <p>
@@ -216,23 +209,19 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="Your choices">
-            <p>
-              Email <MailLink /> and your details will be removed from the
-              sheet. No explanation needed, no confirmation flow, no attempt to
-              talk you out of it.
-            </p>
-            <p>
-              You can also ask what is stored about you, and the answer will be
-              your name, your address, the timestamp, and the form location.
-            </p>
-            <p>
-              Depending on where you live you may have additional rights over
-              your data — access, correction, deletion, portability, or
-              objection — under the GDPR, the UK GDPR, the CCPA, or similar
-              laws. Those requests go to the same address and will be honoured.
-            </p>
-          </Section>
+        <Section title="Your choices">
+          <p>
+            Email <MailLink /> and your details will be removed from the sheet.
+            No explanation needed, no confirmation flow, no attempt to talk you
+            out of it.
+          </p>
+          <p>
+            Depending on where you live you may have additional rights over your
+            data — access, correction, deletion, portability, or objection —
+            under the GDPR, the UK GDPR, the CCPA, or similar laws. Those
+            requests go to the same address and will be honoured.
+          </p>
+        </Section>
 
           <Section title="Security">
             <p>

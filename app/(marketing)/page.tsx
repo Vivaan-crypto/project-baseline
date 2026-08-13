@@ -184,7 +184,7 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-        </section>
+        </section>  
 
         {/* 3 — Fragments, headlined */}
         <section className="border-t border-border py-16 sm:py-20">
@@ -262,7 +262,7 @@ export default function Home() {
               accent, and the rules directly above already use cobalt the same
               way. Not lime (reserved for action/focus) and not red — a privacy
               guarantee is an intentional absence, not a warning. */}
-          <div className="mt-10 border-[3px] border-l-[12px] border-border border-l-cobalt bg-white p-6 shadow-[var(--shadow-lg)] sm:p-8">
+          <div className="mt-10 border-[3px] border-l-12 border-border border-l-cobalt bg-white p-6 shadow-(--shadow-lg) sm:p-8">
             <p className="max-w-2xl text-base leading-relaxed">
               Baseline monitors rhythm and focus patterns—never your private
               content. Our core collector is AGPL-licensed and open source. You

@@ -145,12 +145,53 @@ export default function Home() {
           </div>
         </section>
 
+        {/* 5 — Why not a time tracker */}
+        <section className="border-t border-border py-16 sm:py-20">
+          <SectionHeading eyebrow="The Difference">
+            Built for focus, not just time tracking
+          </SectionHeading>
+          <p className="mb-8 max-w-2xl text-muted">
+            Stop counting hours and start protecting your focus. Traditional
+            tools log where your time went, but Baseline tells you the
+            structural health of your workday.
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-136 border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    What you want to know
+                  </th>
+                  <th className="py-3 pr-4 font-medium text-muted">
+                    Traditional App Logs
+                  </th>
+                  <th className="py-3 font-medium text-muted">Baseline</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.question} className="border-b border-border">
+                    <td className="py-3.5 pr-4 align-top">{row.question}</td>
+                    <td className="py-3.5 pr-4 align-top text-muted">
+                      {row.tracker}
+                    </td>
+                    <td className="py-3.5 align-top font-bold text-cobalt">
+                      {row.baseline}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         {/* 3 — Fragments, headlined */}
         <section className="border-t border-border py-16 sm:py-20">
-          <SectionHeading eyebrow="The Core Metric">
+          <SectionHeading eyebrow="Fragments">
             Did your day come in blocks or shards?
           </SectionHeading>
-          <div className="border-[3px] border-border bg-white p-8 shadow-[var(--shadow-lg)]">
+          <div className="border-[3px] border-border bg-white p-8 shadow-(--shadow-lg)">
             <div className="flex items-baseline gap-3">
               <span className="font-sans text-5xl font-bold tabular-nums sm:text-6xl">
                 11
@@ -221,47 +262,6 @@ export default function Home() {
             don't have to take our word for it; you can inspect the code
             anytime.
           </p>
-        </section>
-
-        {/* 5 — Why not a time tracker */}
-        <section className="border-t border-border py-16 sm:py-20">
-          <SectionHeading eyebrow="The Difference">
-            Built for focus, not just time tracking
-          </SectionHeading>
-          <p className="mb-8 max-w-2xl text-muted">
-            Stop counting hours and start protecting your focus. Traditional
-            tools log where your time went, but Baseline tells you the
-            structural health of your workday.
-          </p>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[34rem] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="py-3 pr-4 font-medium text-muted">
-                    What you want to know
-                  </th>
-                  <th className="py-3 pr-4 font-medium text-muted">
-                    Traditional App Logs
-                  </th>
-                  <th className="py-3 font-medium text-muted">Baseline</th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARISON.map((row) => (
-                  <tr key={row.question} className="border-b border-border">
-                    <td className="py-3.5 pr-4 align-top">{row.question}</td>
-                    <td className="py-3.5 pr-4 align-top text-muted">
-                      {row.tracker}
-                    </td>
-                    <td className="py-3.5 align-top font-bold text-cobalt">
-                      {row.baseline}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </section>
 
         {/* 6 — Rhythm Map */}

@@ -184,7 +184,7 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-        </section>  
+        </section>
 
         {/* 3 — Fragments, headlined */}
         <section className="border-t border-border py-16 sm:py-20">
@@ -258,17 +258,33 @@ export default function Home() {
           </div>
           {/* The section's payoff line, so it gets the card treatment used for
               the Fragments headline rather than sitting as body copy under two
-              lists. Cobalt on the leading edge per §14: this is an emphasis
-              accent, and the rules directly above already use cobalt the same
-              way. Not lime (reserved for action/focus) and not red — a privacy
-              guarantee is an intentional absence, not a warning. */}
-          <div className="mt-10 border-[3px] border-l-12 border-border border-l-cobalt bg-white p-6 shadow-(--shadow-lg) sm:p-8">
+              lists. Green on the leading edge: the brand's signal palette has
+              no green of its own, so this reuses --cat-focus, which is already
+              defined for both themes (it lightens on dark so the edge stays
+              visible against the darker card). Not lime — that is reserved for
+              action and focus — and not red, since a privacy guarantee is an
+              intentional absence rather than a warning. */}
+          <div className="mt-10 border-[3px] border-l-12 border-border border-l-cat-focus bg-white p-6 shadow-(--shadow-lg) sm:p-8">
             <p className="max-w-2xl text-base leading-relaxed">
-              Baseline monitors rhythm and focus patterns—never your private
-              content. Our core collector is AGPL-licensed and open source. You
-              don't have to take our word for it; you can inspect the code
-              anytime.
+              Baseline tracks how you work, never what you’re working on. Your
+              private data stays entirely yours. Because trust shouldn't be
+              blind, our core collector is fully open source (AGPL-licensed).
+              You're always welcome to review the code and verify it for
+              yourself.
             </p>
+            {/* The sentence above makes a claim the reader had no way to act
+                on. Cobalt because the brand reserves it for links, which is
+                also why the leading edge moved off it. External, so a plain
+                anchor rather than next/link. */}
+            <a
+              href="https://github.com/Proj-Baseline/baseline-collector"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="press mt-6 inline-flex items-center gap-2 border-[3px] border-cobalt px-4 py-2.5 font-mono text-sm font-bold text-cobalt shadow-(--shadow-sm) hover:bg-cobalt hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+            >
+              Baseline Collector on GitHub
+              <span aria-hidden="true">-&gt;</span>
+            </a>
           </div>
         </section>
 

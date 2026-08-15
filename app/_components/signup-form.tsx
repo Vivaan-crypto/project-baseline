@@ -162,9 +162,7 @@ export function SignupForm({ location }: { location: string }) {
         className="mt-2 min-h-5 text-xs text-muted"
         role={state.status === "error" ? "alert" : undefined}
       >
-        {state.status === "error"
-          ? state.message
-          : "Windows 10/11. Free for 7 days. No card needed."}
+        {state.status === "error" ? state.message : ""}
       </p>
     </div>
   );

@@ -28,18 +28,6 @@ function normaliseSource(raw: FormDataEntryValue | null): string {
   return /^[a-z0-9_-]+$/.test(cleaned) ? cleaned : "unknown";
 }
 
-/**
- * Names are length-capped and nothing else. Deliberately no character pattern:
- * real names carry apostrophes, hyphens, spaces and accents, and every "letters
- * only" rule ends up rejecting somebody's actual name. Length is the only
- * property worth enforcing here.
- */
-const MAX_NAME_LENGTH = 80;
-
-function readName(raw: FormDataEntryValue | null): string {
-  return typeof raw === "string" ? raw.trim().slice(0, MAX_NAME_LENGTH) : "";
-}
-
 export async function submitSignup(
   _previous: SignupState,
   formData: FormData,
@@ -50,17 +38,6 @@ export async function submitSignup(
   const trap = formData.get("company");
   if (typeof trap === "string" && trap.length > 0) {
     return { status: "success", message: "You're on the list." };
-  }
-
-  const firstName = readName(formData.get("firstName"));
-  const lastName = readName(formData.get("lastName"));
-
-  if (firstName.length === 0 || lastName.length === 0) {
-    return {
-      status: "error",
-      message: "Enter your first and last name.",
-      reason: "missing_name",
-    };
   }
 
   const raw = formData.get("email");
@@ -100,8 +77,6 @@ export async function submitSignup(
   }
 
   const result = await recordSignup({
-    firstName,
-    lastName,
     email,
     // Which form on the page this came from. The whole point of the column: if
     // everyone signs up in the hero, nobody read the privacy section first.

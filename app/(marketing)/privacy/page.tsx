@@ -29,7 +29,7 @@ const CONTACT_EMAIL = "shahvivaan15@gmail.com";
 export const metadata: Metadata = {
   title: "Privacy Policy — Baseline",
   description:
-    "What this website collects, where it goes, and how to have it removed. One email address, two names, and cookieless traffic measurement.",
+    "What this website collects, where it goes, and how to have it removed. One email address and cookieless traffic measurement.",
 };
 
 /**
@@ -120,10 +120,10 @@ export default function PrivacyPage() {
 
           <Section title="What is collected">
             <p>
-              Your first name, last name, and email address, if you type them
-              into the signup form and submit it.
+              Your email address, if you type it into the signup form and submit
+              it.
             </p>
-            <p>Alongside them, two pieces of context are stored:</p>
+            <p>Alongside it, two pieces of context are stored:</p>
             <ul className="flex flex-col gap-2 pl-5">
               <li className="list-disc">The time you submitted the form</li>
               <li className="list-disc">
@@ -169,9 +169,9 @@ export default function PrivacyPage() {
 
           <Section title="Where it goes">
             <p>
-              Submitted names and addresses are stored in a private Google
-              Sheet. Google processes and stores that data under its own terms,
-              which you can read at{" "}
+              Submitted email addresses are stored in a private Google Sheet.
+              Google processes and stores that data under its own terms, which
+              you can read at{" "}
               <Outbound href="https://policies.google.com/privacy">
                 policies.google.com/privacy
               </Outbound>
@@ -231,9 +231,8 @@ export default function PrivacyPage() {
               would be dishonest to claim otherwise.
             </p>
             <p>
-              Given that the only thing stored is a name and an email address
-              you already chose to hand over, the consequences of a failure here
-              are small.
+              Given that the only thing stored is an email address you already
+              chose to hand over, the consequences of a failure here are small.
             </p>
           </Section>
 

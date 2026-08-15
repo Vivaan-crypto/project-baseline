@@ -26,7 +26,7 @@ const PAID = [
 
 export function TierDiagram() {
   return (
-    <div className="border-[3px] border-border bg-card shadow-[var(--shadow-lg)]">
+    <div className="border-[3px] border-border bg-card shadow-(--shadow-lg)">
       <div className="grid md:grid-cols-2">
         <Column
           heading="Free, forever"

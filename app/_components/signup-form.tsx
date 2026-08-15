@@ -15,17 +15,12 @@ const FIELD_CLASS =
 
 /**
  * The beta-list CTA. There is no Windows binary yet (AGENTS.md §9 sequences the
- * landing page ahead of the packaged .exe), so the button collects a name and
- * address instead of serving a file — but the click is still recorded as
- * install intent, which is what assumption #3 in §10 is measured on.
+ * landing page ahead of the packaged .exe), so the button collects an email
+ * instead of serving a file — but the click is still recorded as install intent,
+ * which is what assumption #3 in §10 is measured on.
  *
  * `location` tags the event so several placements can share one total while
  * still being separable.
- *
- * Layout is a three-row stack: first and last name share row one, each taking
- * half the width so the pair measures exactly as wide as the email field on row
- * two. The name row collapses to stacked on narrow screens, where side-by-side
- * fields are too cramped to type in.
  */
 export function SignupForm({ location }: { location: string }) {
   const [state, formAction, pending] = useActionState(
@@ -36,8 +31,6 @@ export function SignupForm({ location }: { location: string }) {
   // The page renders this component more than once; ids must stay unique or the
   // labels bind to the wrong input.
   const id = useId();
-  const firstNameId = `${id}-first-name`;
-  const lastNameId = `${id}-last-name`;
   const emailId = `${id}-email`;
 
   // Depends on the whole state object rather than `state.status`: every submit
@@ -73,47 +66,7 @@ export function SignupForm({ location }: { location: string }) {
   return (
     <div className="sm:max-w-md">
       <form action={formAction} className="flex flex-col gap-3">
-        {/* Row 1 — the two name fields, `flex-1` each so together they span the
-            same width as the email field below. */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          {/* `min-w-0` is load-bearing: a flex item defaults to
-              `min-width: auto`, so without it these wrappers refuse to shrink
-              below the inputs' content width and the pair overflows the row,
-              ending up wider than the email field. */}
-          <div className="flex min-w-0 flex-1 flex-col">
-            <label htmlFor={firstNameId} className="sr-only">
-              First name
-            </label>
-            <input
-              id={firstNameId}
-              name="firstName"
-              type="text"
-              autoComplete="given-name"
-              required
-              maxLength={80}
-              placeholder="First name"
-              className={FIELD_CLASS}
-            />
-          </div>
-
-          <div className="flex min-w-0 flex-1 flex-col">
-            <label htmlFor={lastNameId} className="sr-only">
-              Last name
-            </label>
-            <input
-              id={lastNameId}
-              name="lastName"
-              type="text"
-              autoComplete="family-name"
-              required
-              maxLength={80}
-              placeholder="Last name"
-              className={FIELD_CLASS}
-            />
-          </div>
-        </div>
-
-        {/* Row 2 — email, full width. */}
+        {/* Email field */}
         <label htmlFor={emailId} className="sr-only">
           Email address
         </label>

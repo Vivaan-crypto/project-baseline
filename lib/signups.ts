@@ -49,31 +49,29 @@ type ScriptResponse = {
 
 export type SignupResult =
   | { ok: true; alreadyRegistered: boolean }
-  // `rejected` means the script refused the submission itself — a bad address
-  // or a missing name. The action validates both first, so it should be
-  // unreachable; it exists so a drift between the two validators is visible
-  // rather than reported as a generic outage.
+  // `rejected` means the script refused the submission itself — a bad address.
+  // The action validates the address first, so it should be unreachable; it
+  // exists so a drift between the two validators is visible rather than
+  // reported as a generic outage.
   | { ok: false; reason: "unconfigured" | "upstream" | "rejected" };
 
 /** Errors the Apps Script raises for input it won't store. */
-const REJECTION_ERRORS = new Set(["invalid email", "missing name"]);
+const REJECTION_ERRORS = new Set(["invalid email"]);
 
 export function isSignupConfigured(): boolean {
   return Boolean(ENDPOINT);
 }
 
 export type Signup = {
-  firstName: string;
-  lastName: string;
   email: string;
   source: string;
 };
 
 /**
- * Appends a signup to the sheet as `timestamp | first_name | last_name | email
- * | source`. The timestamp is stamped by the Apps Script at append time rather
- * than sent from here, so the sheet records when the row landed and can't be
- * backdated by whatever POSTs to the endpoint.
+ * Appends a signup to the sheet as `timestamp | email | source`. The timestamp
+ * is stamped by the Apps Script at append time rather than sent from here, so
+ * the sheet records when the row landed and can't be backdated by whatever
+ * POSTs to the endpoint.
  *
  * Duplicate handling also lives in the Apps Script, which checks the email
  * column before appending, so repeat submissions from the same person collapse

@@ -4,8 +4,8 @@ Beta signups land in a Google Sheet via an Apps Script web app. No third-party
 service, no signup, nothing to pay for.
 
 Scope note (AGENTS.md §4): this is the marketing site only. It has zero
-connection to user event data — the only thing that ever reaches the sheet is a
-name and address someone typed into a form on the landing page.
+connection to user event data — the only thing that ever reaches the sheet is an
+email address someone typed into a form on the landing page.
 
 ---
 
@@ -24,22 +24,22 @@ name and address someone typed into a form on the landing page.
 
 Row 1 of `Sheet1`, exactly these, in this order:
 
-| A | B | C | D | E |
-|---|---|---|---|---|
-| `timestamp` | `first_name` | `last_name` | `email` | `source` |
+| A | B | C |
+|---|---|---|
+| `timestamp` | `email` | `source` |
 
 `timestamp` is stamped by the Apps Script with `new Date()` at append time, so
 it records when the row landed and can't be backdated by whatever POSTs to the
 endpoint. Nothing about the time is sent from the site.
 
-Deduplication reads column **D**. If you reorder these columns, change
+Deduplication reads column **B**. If you reorder these columns, change
 `EMAIL_COLUMN` in the script to match or duplicate detection silently starts
 comparing the wrong column.
 
 ### The script
 
 ```javascript
-const EMAIL_COLUMN = 4;  // column D. Change with the header order above.
+const EMAIL_COLUMN = 2;  // column B. Change with the header order above.
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -48,14 +48,9 @@ function doPost(e) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
     const body = JSON.parse(e.postData.contents);
 
-    const firstName = String(body.firstName || '').trim().slice(0, 80);
-    const lastName = String(body.lastName || '').trim().slice(0, 80);
     const email = String(body.email || '').trim().toLowerCase();
     const source = String(body.source || 'unknown').slice(0, 40);
 
-    if (!firstName || !lastName) {
-      return json({ ok: false, error: 'missing name' });
-    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return json({ ok: false, error: 'invalid email' });
     }
@@ -68,7 +63,7 @@ function doPost(e) {
       return json({ ok: true, duplicate: true });
     }
 
-    sheet.appendRow([new Date(), firstName, lastName, email, source]);
+    sheet.appendRow([new Date(), email, source]);
     return json({ ok: true });
   } catch (err) {
     return json({ ok: false, error: String(err) });
@@ -146,9 +141,9 @@ Going through the server action instead buys three things:
 
 | Script reply | Result | Shown |
 |---|---|---|
-| `{ok: true}` | new row | "You're on the list." |
+| `{ok: true}` | new row | "You're on the list. You'll get the build when it's signed off." |
 | `{ok: true, duplicate: true}` | no row written | "You're already on the list." |
-| `{ok: false, error: 'invalid email' \| 'missing name'}` | `rejected` | "Check your name and email and try again." |
+| `{ok: false, error: 'invalid email'}` | `rejected` | "That doesn't look like an email address." |
 | anything else, non-2xx, unparseable, timeout | `upstream` | "Couldn't save that. Try again in a moment." |
 
 Unparseable is a real case, not a defensive nicety: a deployment whose access
@@ -171,7 +166,7 @@ single most common thing to get stuck on.
 
 ## 6. Testing
 
-Submit a real name and address, check the sheet, then submit the same address
+Submit a real email address, check the sheet, then submit the same address
 again — it should say "You're already on the list" and add no row. Submit from
 both the hero and the footer form and confirm the `source` column differs.
 
@@ -184,9 +179,9 @@ If nothing appears:
   not hot-reload env changes, so a dev server started before `.env.local`
   existed keeps reporting "Signup isn't wired up yet" until it is restarted.
 
-If names land empty but rows still appear, the sheet has the new header row but
-the script is still the old version — the old `appendRow` writes three columns
-and ignores the names. Redeploy.
+If the form shows "Couldn't save that" or "Check your email", verify the script
+version — the error means the submitted data doesn't match what the script expects.
+Redeploy the script after any changes.
 
 Errors are visible in the server logs, not the browser console — the request is
 made server-side.

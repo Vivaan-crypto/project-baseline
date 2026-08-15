@@ -100,21 +100,6 @@ function SectionHeading({
   );
 }
 
-function FreeBadge() {
-  return (
-    <span className="shrink-0 border-[3px] border-on-lime bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-on-lime">
-      Free forever
-    </span>
-  );
-}
-
-function IncludedBadge() {
-  return (
-    <span className="shrink-0 border-[3px] border-on-lime bg-lime px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide text-on-lime">
-      Included
-    </span>
-  );
-}
 
 export default function Home() {
   return (
@@ -166,9 +151,6 @@ export default function Home() {
               did constant tab-switching shatter your morning into 11 less
               productive fragments?
             </p>
-            <div className="mt-6">
-              <IncludedBadge />
-            </div>
           </div>
         </section>
 
@@ -284,9 +266,6 @@ export default function Home() {
             first session shows something, getting sharper with time.
           </p>
           <RhythmMap />
-          <div className="mt-6">
-            <IncludedBadge />
-          </div>
         </section>
 
         {/* 1a — What's free vs. what's paid */}

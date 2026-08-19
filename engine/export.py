@@ -310,6 +310,14 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Expand ~ here rather than relying on the shell: the documented invocation
+    # is `--db ~/.baseline/events.db`, and cmd.exe and PowerShell pass the
+    # tilde through literally. Windows is the collector's only platform, so
+    # without this the documented command fails on the only machine that can
+    # produce the file. engine/watch.py and engine/apps.py already do this.
+    args.db = args.db.expanduser()
+    args.out = args.out.expanduser()
+
     if not args.db.exists():
         raise SystemExit(
             f"{args.db} not found — generate it first:\n"

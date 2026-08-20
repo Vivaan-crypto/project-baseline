@@ -26,6 +26,10 @@ export interface ActivityEntry {
   name: string;
   secs: number;
   share: number;
+  /** Keystrokes per minute while this app was in front. Separates writing
+   *  in a browser from watching one. NOT a quality score: careful reading
+   *  is low-input and valuable, so this is displayed, never ranked on. */
+  keysPerMin?: number;
 }
 
 export interface ResidueMeasurement {
@@ -100,6 +104,13 @@ export interface Snapshot {
    *  user's Core can read far lower than reality. */
   untagged: Array<{ name: string; secs: number }>;
   untaggedShare: number;
+  /** What the window-title rules reclassified, and how much time never
+   *  matched one. Patterns only — a title is never exported, because this
+   *  file is imported straight into the browser bundle. */
+  intent?: {
+    rules: Array<{ pattern: string; category: Category; secs: number }>;
+    unmatchedSecs: number;
+  };
   rhythm: { days: string[]; hours: number[]; grid: number[][] };
   sweeps: {
     coreMinutes: Record<string, Record<string, number | null>>;

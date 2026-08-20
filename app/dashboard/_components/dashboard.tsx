@@ -13,6 +13,7 @@ import { Rhythm } from "./rhythm";
 import { Thresholds } from "./thresholds";
 import { Trace } from "./trace";
 import { UntaggedNotice } from "./untagged";
+import { IntentNotice } from "./intent";
 import { Verdict } from "./verdict";
 
 /**
@@ -64,6 +65,7 @@ export function Dashboard() {
       {/* Above the verdict on purpose: if a chunk of the day is uncounted,
           you need to know that before you read any number below it. */}
       <UntaggedNotice />
+      <IntentNotice />
 
       <Verdict day={day} all={DATA.days} />
 

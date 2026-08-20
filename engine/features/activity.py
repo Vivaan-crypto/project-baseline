@@ -36,6 +36,16 @@ class ActivityEntry:
     name: str
     secs: float
     share: float  # of total active seconds; 0.0 when there is no active time
+    keys: int = 0
+
+    @property
+    def keys_per_min(self) -> float:
+        """Input intensity while this app was in front. Separates writing in
+        a browser from watching one — but NOT valuable from worthless: an
+        hour of careful reading and an hour of scrolling look identical
+        here, and nothing in engine/ pretends otherwise."""
+        minutes = self.secs / 60.0
+        return self.keys / minutes if minutes > 0 else 0.0
 
 
 @dataclass
@@ -45,12 +55,17 @@ class ActivityResult:
     by_category: list[ActivityEntry]
 
 
-def _entries(totals: dict[str, float], total_active: float) -> list[ActivityEntry]:
+def _entries(
+    totals: dict[str, float],
+    total_active: float,
+    keys: dict[str, int] | None = None,
+) -> list[ActivityEntry]:
     return [
         ActivityEntry(
             name=name,
             secs=secs,
             share=(secs / total_active) if total_active > 0 else 0.0,
+            keys=(keys or {}).get(name, 0),
         )
         for name, secs in sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
     ]
@@ -63,21 +78,28 @@ def activity(
     """`all_blocks` must be blocks()'s full output, every category — this is
     a picture of the whole day, not just its focus time."""
     by_process: dict[str, float] = {}
+    keys_by_process: dict[str, int] = {}
     for block in all_blocks:
         for process, secs in block.process_secs.items():
             by_process[process] = by_process.get(process, 0.0) + secs
+        for process, count in block.process_keys.items():
+            keys_by_process[process] = keys_by_process.get(process, 0) + count
 
     by_category: dict[str, float] = {}
+    keys_by_category: dict[str, int] = {}
     for process, secs in by_process.items():
         # UNKNOWN_PROCESS routes through category_of(None), which returns
         # DEFAULT_CATEGORY — same fallback blocks() used when it built the
         # segment, so the two never disagree.
         key = category_of(None if process == UNKNOWN_PROCESS else process)
         by_category[key] = by_category.get(key, 0.0) + secs
+        keys_by_category[key] = keys_by_category.get(key, 0) + keys_by_process.get(
+            process, 0
+        )
 
     total_active = sum(by_process.values())
     return ActivityResult(
         total_active_secs=total_active,
-        by_process=_entries(by_process, total_active),
-        by_category=_entries(by_category, total_active),
+        by_process=_entries(by_process, total_active, keys_by_process),
+        by_category=_entries(by_category, total_active, keys_by_category),
     )

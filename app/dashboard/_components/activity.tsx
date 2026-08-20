@@ -76,6 +76,15 @@ export function Activity({ day, bare = false }: { day: Day; bare?: boolean }) {
                     {entry.name}
                   </span>
                   <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted">
+                    {/* Input intensity, not a verdict. An hour of reading
+                        documentation and an hour of scrolling look the same
+                        here — no timing signal separates them, so this is
+                        shown next to the time rather than scored. */}
+                    {entry.keysPerMin != null && entry.keysPerMin > 0 && (
+                      <span title="keystrokes per minute while this app was in front">
+                        {Math.round(entry.keysPerMin)} kpm ·{" "}
+                      </span>
+                    )}
                     {Math.round(entry.share * 100)}%
                   </span>
                 </div>

@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from engine.blocks import blocks as build_blocks
+from engine.blocks import segments as build_segments
 from engine.categorize import make_category_lookup, untagged_processes
 from engine.config import (
     CORE_MINUTES,
@@ -43,8 +44,9 @@ from engine.config import (
     SWITCH_TOLERANCE,
 )
 from engine.daily import group_blocks_by_day, trailing_days
-from engine.db import read_events
+from engine.db import read_events_titled
 from engine.features.activity import activity
+from engine.intent import make_intent_lookup, match_rule, rule_table
 from engine.features.bedrock import bedrock
 from engine.features.core import core
 from engine.features.fragments import fragments
@@ -156,7 +158,12 @@ def _day_payload(
         },
         "activity": {
             "byProcess": [
-                {"name": e.name, "secs": _round(e.secs), "share": _round(e.share, 4)}
+                {
+                    "name": e.name,
+                    "secs": _round(e.secs),
+                    "share": _round(e.share, 4),
+                    "keysPerMin": _round(e.keys_per_min, 1),
+                }
                 for e in act.by_process
             ],
             "byCategory": [
@@ -188,9 +195,15 @@ def _sweeps(
     category_of: Any,
     tz: tzinfo,
     base_blocks_by_day: dict[str, list[Block]],
+    intent_of: Any = None,
 ) -> dict[str, Any]:
     """Every threshold value the UI can select, computed by the real engine
-    functions. See the module docstring."""
+    functions. See the module docstring.
+
+    `intent_of` has to be threaded through: the sweeps rebuild blocks from
+    raw events, so leaving it out would silently compute the tuning panel on
+    app-only categories while the dashboard beside it used title-aware ones,
+    and the two would disagree for reasons no one could see."""
     core_sweep: dict[str, dict[str, float | None]] = {}
     for minutes in CORE_MINUTES_SWEEP:
         core_sweep[str(minutes)] = {
@@ -205,7 +218,15 @@ def _sweeps(
         out: dict[str, dict[str, Any]] = {}
         for value in values:
             rebuilt = build_blocks(
-                keys_ts, mouse_ts, windows, category_of, **{param: value}
+                keys_ts,
+                mouse_ts,
+                windows,
+                category_of,
+                intent_of=intent_of,
+                switch_tolerance=(
+                    float(value) if param == "switch_tolerance" else SWITCH_TOLERANCE
+                ),
+                idle_gap=float(value) if param == "idle_gap" else IDLE_GAP,
             )
             per_day = group_blocks_by_day(rebuilt, tz)
             out[str(value)] = {}
@@ -234,14 +255,17 @@ def _sweeps(
 
 
 def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
-    keys_ts, mouse_ts, windows = read_events(db_path)
+    keys_ts, mouse_ts, windows = read_events_titled(db_path)
     # A mock export must not depend on whose machine it runs on, or the
     # committed sample would differ per developer.
     category_of = make_category_lookup(use_user_file=(source == "real"))
+    intent_of = make_intent_lookup(use_user_file=(source == "real"))
     tz = datetime.now().astimezone().tzinfo
     assert tz is not None  # astimezone() always attaches one
 
-    all_blocks = build_blocks(keys_ts, mouse_ts, windows, category_of)
+    all_blocks = build_blocks(
+        keys_ts, mouse_ts, windows, category_of, intent_of=intent_of
+    )
     grouped = group_blocks_by_day(all_blocks, tz)
     rhythm = rhythm_grid(all_blocks, tz=tz)
 
@@ -260,6 +284,22 @@ def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
         if name != "unknown"
     ]
     untagged_secs = sum(float(u["secs"] or 0) for u in untagged)
+
+    # What the title rules actually claimed. Only the rule PATTERN and its
+    # totals are exported — never a window title. dashboard.json is a build
+    # artifact that ends up in a bundle, and titles must not be in it.
+    table = rule_table(use_user_file=(source == "real"))
+    intent_secs: dict[str, float] = {}
+    intent_unmatched = 0.0
+    for seg in build_segments(
+        keys_ts, mouse_ts, windows, category_of, intent_of=intent_of
+    ):
+        hit = match_rule(seg.title, table)
+        if hit is None:
+            intent_unmatched += seg.duration_secs
+        else:
+            intent_secs[hit[0]] = intent_secs.get(hit[0], 0.0) + seg.duration_secs
+    by_pattern = {pattern: category for pattern, category, _ in table}
 
     return {
         "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -280,6 +320,17 @@ def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
             _day_payload(date, grouped[date], grouped, category_of, tz)
             for date in sorted(grouped)
         ],
+        "intent": {
+            "rules": [
+                {
+                    "pattern": pattern,
+                    "category": by_pattern[pattern],
+                    "secs": _round(secs),
+                }
+                for pattern, secs in sorted(intent_secs.items(), key=lambda kv: -kv[1])
+            ],
+            "unmatchedSecs": _round(intent_unmatched),
+        },
         "untagged": untagged,
         "untaggedShare": _round(
             untagged_secs / overall.total_active_secs
@@ -293,7 +344,7 @@ def build_snapshot(db_path: Path, source: str) -> dict[str, Any]:
             "grid": rhythm.grid,
         },
         "sweeps": _sweeps(
-            keys_ts, mouse_ts, windows, category_of, tz, grouped
+            keys_ts, mouse_ts, windows, category_of, tz, grouped, intent_of
         ),
     }
 

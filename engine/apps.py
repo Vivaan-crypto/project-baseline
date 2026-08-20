@@ -66,8 +66,8 @@ def cmd_list(args: argparse.Namespace) -> int:
     user = load_user_categories()
     untagged_secs = 0.0
 
-    print(f"{'app':<32}{'time':>10}  {'counted as':<12} source")
-    print("-" * 72)
+    print(f"{'app':<30}{'time':>9}{'kpm':>7}  {'counted as':<12} source")
+    print("-" * 78)
     for entry in result.by_process:
         cat = category_of(entry.name)
         key = entry.name.strip().lower()
@@ -82,7 +82,13 @@ def cmd_list(args: argparse.Namespace) -> int:
         else:
             source = "UNTAGGED"
             untagged_secs += entry.secs
-        print(f"{entry.name:<32}{_fmt(entry.secs):>10}  {cat:<12} {source}")
+        # kpm is keystrokes per minute while that app was in front. It says
+        # whether an app was being typed into or watched — not whether the
+        # time was well spent, which no timing signal can tell you.
+        kpm = f"{entry.keys_per_min:.0f}" if entry.keys > 0 else "-"
+        print(
+            f"{entry.name:<30}{_fmt(entry.secs):>9}{kpm:>7}  {cat:<12} {source}"
+        )
 
     if untagged_secs > 0:
         share = untagged_secs / result.total_active_secs
@@ -91,6 +97,11 @@ def cmd_list(args: argparse.Namespace) -> int:
         print("Those count toward your total but not toward Fragments, Bedrock or Core.")
         print("Tag the ones that are real work:")
         print("  python -m engine.apps set <app> focus")
+
+    print()
+    print("An app that is work sometimes and not others (a browser) is better")
+    print("split by what was on screen than tagged one way:")
+    print("  python -m engine.titles list --db <path>")
     return 0
 
 

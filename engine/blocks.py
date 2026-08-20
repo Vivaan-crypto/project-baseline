@@ -14,7 +14,7 @@ blocks, which focus_blocks() has already thrown away.
 
 from __future__ import annotations
 
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from collections.abc import Callable, Sequence
 
 from engine.activity import active_runs
@@ -22,16 +22,50 @@ from engine.config import IDLE_GAP, SWITCH_TOLERANCE
 from engine.types import Block, Category, Segment
 
 
-def _accumulate(process_secs: dict[str, float], seg: Segment) -> None:
-    process_secs[seg.process or "unknown"] = (
-        process_secs.get(seg.process or "unknown", 0.0) + seg.duration_secs
-    )
+def _accumulate(
+    process_secs: dict[str, float], seg: Segment, process_keys: dict[str, int] | None = None
+) -> None:
+    key = seg.process or "unknown"
+    process_secs[key] = process_secs.get(key, 0.0) + seg.duration_secs
+    if process_keys is not None:
+        process_keys[key] = process_keys.get(key, 0) + seg.key_count
+
+
+def _count_between(
+    sorted_ts: Sequence[float] | None, t0: float, t1: float, inclusive: bool = False
+) -> int:
+    """Events in [t0, t1), or [t0, t1] when `inclusive`.
+
+    Half-open by default so two adjacent segments never both claim an event
+    that landed exactly on their shared boundary. The exception is a run's
+    final segment: active_runs() ends a run ON its last event, so a
+    half-open count there would drop that event from every block in the
+    dataset — sum(block.key_count) would then silently sit one below the
+    number of keys per run, and per-app density would be wrong by the same
+    amount in the app that happened to be last."""
+    if not sorted_ts:
+        return 0
+    right = bisect_right(sorted_ts, t1) if inclusive else bisect_left(sorted_ts, t1)
+    return right - bisect_left(sorted_ts, t0)
+
+
+def _row(window: tuple) -> tuple[float, str | None, str | None]:
+    """Window rows are (ts, process) or (ts, process, title). Both are
+    accepted: every existing caller and test passes the two-field form, and
+    a capture made with --no-titles has no third field worth carrying."""
+    ts, process = window[0], window[1]
+    title = window[2] if len(window) > 2 else None
+    return ts, process, title
 
 
 def clip_category_segments(
     runs: list[tuple[float, float]],
-    windows: Sequence[tuple[float, str | None]],
+    windows: Sequence[tuple],
     category_of: Callable[[str | None], Category],
+    *,
+    intent_of: Callable[[str | None, str | None], Category | None] | None = None,
+    keys_ts: Sequence[float] | None = None,
+    mouse_ts: Sequence[float] | None = None,
 ) -> list[Segment]:
     """For each active run, walk the `windows` focus-change events and emit
     one Segment per (category, process) span, clipped to the run's bounds.
@@ -41,39 +75,72 @@ def clip_category_segments(
     focus-change event fired, because nothing happened) must not silently
     extend that process's segment through the gap. Segments only ever exist
     inside an active run.
+
+    `intent_of` resolves the window title to a category that overrides the
+    app's own. It is consulted per window row, so switching tabs inside one
+    browser changes category mid-run exactly as switching apps would — which
+    is the whole point of reading titles. Returning None leaves the app's
+    category standing, so a capture without titles behaves as it always did.
     """
+    def _category(process: str | None, title: str | None) -> Category:
+        if intent_of is not None:
+            override = intent_of(process, title)
+            if override is not None:
+                return override
+        return category_of(process)
+
+    def _seg(
+        t0: float,
+        t1: float,
+        process: str | None,
+        title: str | None,
+        inclusive: bool = False,
+    ) -> Segment:
+        return Segment(
+            t0,
+            t1,
+            _category(process, title),
+            process,
+            title,
+            _count_between(keys_ts, t0, t1, inclusive),
+            _count_between(mouse_ts, t0, t1, inclusive),
+        )
+
     if not windows:
         # No window-change events at all: every active run is one segment of
         # unknown process, categorized via category_of(None).
-        cat = category_of(None)
-        return [Segment(t0, t1, cat, None) for t0, t1 in runs if t1 > t0]
+        return [_seg(t0, t1, None, None, True) for t0, t1 in runs if t1 > t0]
 
-    windows_ts = [w[0] for w in windows]
+    rows = [_row(w) for w in windows]
+    windows_ts = [r[0] for r in rows]
     segments: list[Segment] = []
 
     for run_t0, run_t1 in runs:
         idx = bisect_right(windows_ts, run_t0) - 1
-        current_process = windows[idx][1] if idx >= 0 else None
+        current_process = rows[idx][1] if idx >= 0 else None
+        current_title = rows[idx][2] if idx >= 0 else None
         seg_start = run_t0
         j = idx + 1
 
-        while j < len(windows) and windows_ts[j] <= run_t1:
+        while j < len(rows) and windows_ts[j] <= run_t1:
             if windows_ts[j] > seg_start:
                 segments.append(
-                    Segment(
+                    _seg(
                         seg_start,
                         windows_ts[j],
-                        category_of(current_process),
                         current_process,
+                        current_title,
+                        windows_ts[j] >= run_t1,
                     )
                 )
-            current_process = windows[j][1]
+            current_process = rows[j][1]
+            current_title = rows[j][2]
             seg_start = windows_ts[j]
             j += 1
 
         if run_t1 > seg_start:
             segments.append(
-                Segment(seg_start, run_t1, category_of(current_process), current_process)
+                _seg(seg_start, run_t1, current_process, current_title, True)
             )
 
     return segments
@@ -109,7 +176,9 @@ def merge_segments(
         home_start = segments[i].t0
         home_end = segments[i].t1
         process_secs: dict[str, float] = {}
-        _accumulate(process_secs, segments[i])
+        process_keys: dict[str, int] = {}
+        mouse_count = segments[i].mouse_count
+        _accumulate(process_secs, segments[i], process_keys)
         i += 1
 
         pending: list[Segment] = []
@@ -130,8 +199,10 @@ def merge_segments(
                 # Confirmed: the excursion (if any) resolved back home
                 # before busting tolerance. Absorb everything into home.
                 for p in pending:
-                    _accumulate(process_secs, p)
-                _accumulate(process_secs, seg)
+                    _accumulate(process_secs, p, process_keys)
+                    mouse_count += p.mouse_count
+                _accumulate(process_secs, seg, process_keys)
+                mouse_count += seg.mouse_count
                 home_end = seg.t1
                 pending = []
                 i += 1
@@ -159,6 +230,9 @@ def merge_segments(
                 end=home_end,
                 category=home_category,
                 process_secs=process_secs,
+                key_count=sum(process_keys.values()),
+                mouse_count=mouse_count,
+                process_keys=process_keys,
                 open_ended=open_ended,
             )
         )
@@ -172,26 +246,64 @@ def merge_segments(
 def blocks(
     keys_ts: list[float],
     mouse_ts: list[float],
-    windows: Sequence[tuple[float, str | None]],
+    windows: Sequence[tuple],
     category_of: Callable[[str | None], Category],
     *,
+    intent_of: Callable[[str | None, str | None], Category | None] | None = None,
     switch_tolerance: float = SWITCH_TOLERANCE,
     idle_gap: float = IDLE_GAP,
 ) -> list[Block]:
     """The full pipeline: raw events -> active runs -> category segments ->
     tolerance-merged Blocks. All categories, not just focus — see module
-    docstring for why."""
+    docstring for why.
+
+    `intent_of` is optional and off by default, so every existing caller gets
+    exactly the behaviour it had before titles existed."""
+    return merge_segments(
+        segments(
+            keys_ts,
+            mouse_ts,
+            windows,
+            category_of,
+            intent_of=intent_of,
+            idle_gap=idle_gap,
+        ),
+        switch_tolerance,
+    )
+
+
+def segments(
+    keys_ts: list[float],
+    mouse_ts: list[float],
+    windows: Sequence[tuple],
+    category_of: Callable[[str | None], Category],
+    *,
+    intent_of: Callable[[str | None, str | None], Category | None] | None = None,
+    idle_gap: float = IDLE_GAP,
+) -> list[Segment]:
+    """Everything blocks() does except the tolerance merge.
+
+    Exposed because `engine.titles` needs per-title spans with idle time
+    already excluded, and reimplementing that clipping in the CLI is how the
+    two would silently drift apart."""
     runs = active_runs(keys_ts, mouse_ts, idle_gap)
-    segments = clip_category_segments(runs, windows, category_of)
-    return merge_segments(segments, switch_tolerance)
+    return clip_category_segments(
+        runs,
+        windows,
+        category_of,
+        intent_of=intent_of,
+        keys_ts=keys_ts,
+        mouse_ts=mouse_ts,
+    )
 
 
 def focus_blocks(
     keys_ts: list[float],
     mouse_ts: list[float],
-    windows: Sequence[tuple[float, str | None]],
+    windows: Sequence[tuple],
     category_of: Callable[[str | None], Category],
     *,
+    intent_of: Callable[[str | None, str | None], Category | None] | None = None,
     switch_tolerance: float = SWITCH_TOLERANCE,
     idle_gap: float = IDLE_GAP,
 ) -> list[Block]:
@@ -202,6 +314,7 @@ def focus_blocks(
         mouse_ts,
         windows,
         category_of,
+        intent_of=intent_of,
         switch_tolerance=switch_tolerance,
         idle_gap=idle_gap,
     )

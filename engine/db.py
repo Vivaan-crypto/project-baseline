@@ -19,14 +19,33 @@ def read_events(
 ) -> tuple[list[float], list[float], list[tuple[float, str | None]]]:
     """Returns (keys_ts, mouse_ts, windows) ready to pass straight into
     engine.blocks.blocks(). `windows` is sorted by timestamp, since
-    engine.blocks relies on that ordering."""
+    engine.blocks relies on that ordering.
+
+    Titles are dropped here. Callers that classify by title use
+    read_events_titled(); everything else never sees the most sensitive
+    column in the database, which is the point of having two functions
+    rather than one flag."""
+    keys_ts, mouse_ts, windows = read_events_titled(db_path)
+    return keys_ts, mouse_ts, [(ts, process) for ts, process, _ in windows]
+
+
+def read_events_titled(
+    db_path: Path,
+) -> tuple[list[float], list[float], list[tuple[float, str | None, str | None]]]:
+    """As read_events(), but window rows keep their title.
+
+    A capture made with --no-titles has NULL there, which every consumer
+    already has to handle — the title has been nullable since the schema
+    existed."""
     conn = sqlite3.connect(db_path)
     try:
         keys_ts = [row[0] for row in conn.execute("SELECT ts FROM keys ORDER BY ts")]
         mouse_ts = [row[0] for row in conn.execute("SELECT ts FROM mouse ORDER BY ts")]
         windows = [
-            (row[0], row[1])
-            for row in conn.execute("SELECT ts, process FROM windows ORDER BY ts")
+            (row[0], row[1], row[2])
+            for row in conn.execute(
+                "SELECT ts, process, title FROM windows ORDER BY ts"
+            )
         ]
     finally:
         conn.close()
